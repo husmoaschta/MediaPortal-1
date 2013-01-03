@@ -28,7 +28,8 @@ namespace MediaPortal.UserInterface.Controls
   public class ImageTextComparer : IComparer
   {
     [DllImport("shlwapi.dll", CharSet = CharSet.Unicode)]
-    private extern int StrCmpLogicalW(string x, string y);
+    private static extern int StrCmpLogicalW(string x, string y);
+
     //private CaseInsensitiveComparer ObjectCompare;
     private readonly  NumberCaseInsensitiveComparer ObjectCompare;
 

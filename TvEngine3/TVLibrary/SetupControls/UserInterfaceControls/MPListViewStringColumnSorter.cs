@@ -28,7 +28,7 @@ namespace MediaPortal.UserInterface.Controls
   public class MPListViewStringColumnSorter : IComparer
   {
     [DllImport("shlwapi.dll", CharSet = CharSet.Unicode)]
-    private extern int StrCmpLogicalW(string x, string y);
+    private static extern int StrCmpLogicalW(string x, string y);
 
     public enum OrderTypes
     {

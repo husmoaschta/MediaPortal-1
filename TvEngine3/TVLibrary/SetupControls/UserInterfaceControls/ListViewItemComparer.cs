@@ -31,7 +31,8 @@ namespace MediaPortal.Configuration.Controls
   public class ListViewItemComparer : IComparer
   {
     [DllImport("shlwapi.dll", CharSet = CharSet.Unicode)]
-    private extern int StrCmpLogicalW(string x, string y);
+    private static extern int StrCmpLogicalW(string x, string y);
+
     private readonly int col;
 
     public ListViewItemComparer()
