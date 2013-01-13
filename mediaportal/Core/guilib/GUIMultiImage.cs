@@ -226,11 +226,33 @@ namespace MediaPortal.GUI.Library
           // check if we should be loading a new image yet
           if (_imageTimer.IsRunning && _imageTimer.ElapsedMilliseconds > _timePerImage)
           {
-            _imageTimer.Stop();
-            // grab a new image
-            LoadImage(nextImage);
-            // start the fade timer
-            _fadeTimer.StartZero();
+            // load the image threaded to keep render thread free
+            // will continue with fading to new image in one of the next render loops once image has finished loading
+            new System.Threading.Thread(delegate()
+            {
+              {
+                try
+                {
+                  // make sure, thread is not started multiple times on next render loops
+                  _imageTimer.Stop();
+                  // grab a new image
+                  LoadImage(nextImage);
+                }
+                catch (Exception ex)
+                {
+                  Log.Error("GUIMultiImage - error loading next Image: {0}", ex.Message);
+                }
+              }
+              GUIWindowManager.SendThreadCallbackAndWait((p1, p2, data) =>
+              {
+                // start the fade timer and initialte fading
+                _fadeTimer.StartZero();
+                return 0;
+              }, 0, 0, null);
+            }) { Name = "MultiImage NextImage Loader", IsBackground = true, Priority = System.Threading.ThreadPriority.BelowNormal }.Start();
+
+            base.Render(timePassed);
+            return;
           }
 
           // check if we are still fading
@@ -337,16 +359,17 @@ namespace MediaPortal.GUI.Library
 
     public void LoadImage(int image)
     {
-      if (_imageList != null)
+      if (_imageList == null)
       {
-        if (image < 0 || image >= _imageList.Count)
-        {
-          return;
-        }
-
-        _imageList[image].AllocResources();
-        _imageList[image].ColourDiffuse = ColourDiffuse;
+        return;
       }
+      if (image < 0 || image >= _imageList.Count)
+      {
+        return;
+      }
+
+      _imageList[image].AllocResources();
+      _imageList[image].ColourDiffuse = ColourDiffuse;
     }
 
     private void GUIPropertyManager_OnPropertyChanged(string tag, string tagValue)
