@@ -18,9 +18,14 @@
  *  http://www.gnu.org/copyleft/gpl.html
  *
  */
+#include "criticalsection.h"
+#include "entercriticalsection.h"
 #include "VideoAudioScrambledAnalyzer.h"
 
 #pragma once
+
+using namespace Mediaportal;
+
 DEFINE_GUID(IID_ITSVideoAnalyzer,0x59f8d617, 0x92fd, 0x48d5, 0x8f, 0x6d, 0xa9, 0x7b, 0xfd, 0x95, 0xc4, 0x48);
 
 // video anayzer interface
@@ -56,6 +61,11 @@ public:
 	STDMETHODIMP IsAudioEncrypted( int* yesNo);
 	STDMETHODIMP Reset();
 	void OnTsPacket(byte* tsPacket);
+
+private:
+    CCriticalSection m_section;
+
 protected:
+	
 	CVideoAudioScrambledAnalyzer m_videoAudioAnalyzer;
 };

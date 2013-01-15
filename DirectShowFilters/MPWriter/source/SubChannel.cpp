@@ -133,7 +133,6 @@ STDMETHODIMP CSubChannel::StartTimeShifting()
 STDMETHODIMP CSubChannel::StopTimeShifting()
 {
 	CAutoLock lock(&m_Lock);
-
 	if (m_bIsTimeShifting)
 	{
 		LogDebug(L"CSubChannel::StopTimeShifting() - (%d) - Filename:'%s'",m_id,m_wstrTimeShiftFileName);
@@ -149,7 +148,6 @@ STDMETHODIMP CSubChannel::StopTimeShifting()
 STDMETHODIMP CSubChannel::PauseTimeShifting(int onOff)
 {
 	CAutoLock lock(&m_Lock);
-
 	LogDebug("CSubChannel::PauseTimeShifting() - (%d) - Status: %d",m_id,onOff);
 	m_bPaused=(onOff!=0);
 	if(m_bPaused){
@@ -177,10 +175,10 @@ STDMETHODIMP CSubChannel::SetRecordingFileNameW(wchar_t* pwszFileName)
 
 STDMETHODIMP CSubChannel::StartRecord()
 {
-	CAutoLock lock(&m_Lock);
-	StopRecord();
-	if (wcslen(m_wstrRecordingFileName)==0) return E_FAIL;
 
+    StopRecord();
+	CAutoLock lock(&m_Lock);
+	if (wcslen(m_wstrRecordingFileName)==0) return E_FAIL;
 	::DeleteFileW((LPCWSTR) m_wstrRecordingFileName);
 	LogDebug(L"CSubChannel::StartRecord() - (%d) - Filename:'%s'",m_id,m_wstrRecordingFileName);
 	m_pTsRecorder->Initialize(m_wstrRecordingFileName);
@@ -190,7 +188,7 @@ STDMETHODIMP CSubChannel::StartRecord()
 }	
 STDMETHODIMP CSubChannel::StopRecord()
 {
-	CAutoLock lock(&m_Lock);
+	CAutoLock lock(&m_Lock); 
 	if(!m_bIsRecording){
 		return S_OK;
 	}
@@ -229,12 +227,14 @@ HRESULT CSubChannel::WriteTeletext(PBYTE pbData, LONG lDataLength){
 
 
 STDMETHODIMP CSubChannel::TTxSetCallBack(IAnalogTeletextCallBack* callback){
+	CAutoLock lock(&m_Lock);
 	LogDebug("CSubChannel::TTxSetCallBack() - (%d)",m_id);
 	m_pTeletextGrabber->SetCallBack(callback);
 	return S_OK;
 }
 
 STDMETHODIMP CSubChannel::SetVideoAudioObserver(IAnalogVideoAudioObserver* callback){
+    CAutoLock lock(&m_Lock);
 	LogDebug("CSubChannel::SetVideoAudioObserver() - (%d)",m_id);
 	m_pTsWriter->SetVideoAudioObserver(callback);
 	return S_OK;
@@ -242,6 +242,7 @@ STDMETHODIMP CSubChannel::SetVideoAudioObserver(IAnalogVideoAudioObserver* callb
 
 
 STDMETHODIMP CSubChannel::SetRecorderVideoAudioObserver(IAnalogVideoAudioObserver* callback){
+	CAutoLock lock(&m_Lock);
 	LogDebug("CSubChannel::SetRecorderVideoAudioObserver() - (%d)",m_id);
 	m_pTsRecorder->SetVideoAudioObserver(callback);
 	return S_OK;

@@ -21,6 +21,8 @@
 #pragma once
 
 #include "..\..\shared\TsHeader.h"
+
+
 class CVideoAudioScrambledAnalyzer
 {
 public:

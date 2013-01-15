@@ -39,12 +39,14 @@ CPmtParser::~CPmtParser(void)
 
 void CPmtParser::Reset()
 {
+	CEnterCriticalSection enter(m_section);
 	m_pmtCallback2=NULL;
 	CSectionDecoder::Reset();
 }
 
 void CPmtParser::SetPmtCallBack2(IPmtCallBack2* callback)
 {
+	CEnterCriticalSection enter(m_section);
 	m_pmtCallback2=callback;
 }
 
@@ -53,6 +55,7 @@ void CPmtParser::SetPmtCallBack2(IPmtCallBack2* callback)
 //       proper fix is to change code of all classes that depend on PidInfo2 in favour of CPidTable!
 bool CPmtParser::DecodePmt(CSection sections, int& pcr_pid, bool& hasCaDescriptor, vector<PidInfo2>& pidInfos)
 {
+	CEnterCriticalSection enter(m_section);
 	byte* section=sections.Data;
 	int sectionLen=sections.section_length;
 
@@ -114,20 +117,9 @@ bool CPmtParser::DecodePmt(CSection sections, int& pcr_pid, bool& hasCaDescripto
 		pidInfo2.fakePid=-1;
 		pidInfo2.elementaryPid=elementary_PID;
 		pidInfo2.streamType=stream_type;
-    pidInfo2.rawDescriptorSize=ES_info_length;
-    if (pidInfo2.streamType!=SERVICE_TYPE_DVB_SUBTITLES2)
-      pidInfo2.logicalStreamType=stream_type;
-    //ITV HD workaround
-    if (pidInfo2.streamType==SERVICE_TYPE_DVB_SUBTITLES2 && program_number==10510)
-    {
-      if (pidInfo2.logicalStreamType==0xffffffff && pidInfo2.elementaryPid==0xd49)
-      {
-        pidInfo2.streamType=SERVICE_TYPE_VIDEO_H264;
-        pidInfo2.logicalStreamType=SERVICE_TYPE_VIDEO_H264;
-        LogDebug("DecodePmt: set ITV HD video stream to H.264");
-      }
-    }
-    //end of workaround
+        pidInfo2.rawDescriptorSize=ES_info_length;
+        pidInfo2.logicalStreamType=stream_type;
+
 
 	// Boundary check
     if(ES_info_length > sizeof(pidInfo2.rawDescriptorData)) 
@@ -179,7 +171,7 @@ bool CPmtParser::DecodePmt(CSection sections, int& pcr_pid, bool& hasCaDescripto
 void CPmtParser::OnNewSection(CSection& sections)
 { 
 	if (m_isFound) return;
-
+	CEnterCriticalSection enter(m_section);
 	int pcr_pid=0;
 	bool hasCaDescriptor=false;
 

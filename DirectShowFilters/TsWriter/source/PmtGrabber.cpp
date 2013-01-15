@@ -60,6 +60,7 @@ STDMETHODIMP CPmtGrabber::SetPmtPid( int pmtPid, long serviceId)
     {
   		LogDebug("pmtgrabber: grab pmt:%x sid:%x", pmtPid,serviceId);
     }
+
   	CSectionDecoder::SetPid(pmtPid);
   	m_iPmtVersion=-1;
   	m_iServiceId=serviceId;
@@ -85,7 +86,6 @@ void CPmtGrabber::OnTsPacket(byte* tsPacket)
 	if (m_pCallback==NULL) return;
   int pid=((tsPacket[1] & 0x1F) <<8)+tsPacket[2];
   if (pid != GetPid()) return;
-	CEnterCriticalSection enter(m_section);
   CSectionDecoder::OnTsPacket(tsPacket);
 }
 
@@ -93,6 +93,7 @@ void CPmtGrabber::OnNewSection(CSection& section)
 {
 	try
 	{
+	 CEnterCriticalSection enter(m_section);
     // if only service ID given, lookup from PAT
     if (GetPid() == 0) // PID 0 is the PAT, so look for matching PMT
     {
@@ -109,8 +110,6 @@ void CPmtGrabber::OnNewSection(CSection& section)
     }
 
     if (section.table_id!=2) return;
-
-    CEnterCriticalSection enter(m_section);
 
 		if (section.section_length<0 || section.section_length>=MAX_SECTION_LENGTH) return;
 

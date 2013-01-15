@@ -505,7 +505,7 @@ CUnknown * WINAPI CMPFileWriter::CreateInstance(LPUNKNOWN punk, HRESULT *phr)
 STDMETHODIMP CMPFileWriter::NonDelegatingQueryInterface(REFIID riid, void ** ppv)
 {
 	CheckPointer(ppv,E_POINTER);
-	CAutoLock lock(&m_Lock);
+	//CAutoLock lock(&m_Lock);
 
 	// Do we have this interface
 	if (riid == IID_IMPFileRecord)
@@ -565,6 +565,7 @@ BOOL APIENTRY DllMain(HANDLE hModule,
 
 STDMETHODIMP CMPFileWriter::SetTimeShiftFileNameW(int subChannelId, wchar_t* pwszFileName)
 {
+	CAutoLock lock(&m_Lock); 
 	CSubChannel* pSubChannel=GetSubChannel(subChannelId);
 	if (pSubChannel==NULL) return S_OK;
 	return pSubChannel->SetTimeShiftFileNameW(pwszFileName);
@@ -572,12 +573,14 @@ STDMETHODIMP CMPFileWriter::SetTimeShiftFileNameW(int subChannelId, wchar_t* pws
 
 STDMETHODIMP CMPFileWriter::SetTimeShiftParams(int subChannelId, int minFiles, int maxFiles, ULONG maxFileSize)
 {
+	CAutoLock lock(&m_Lock); 
 	CSubChannel* pSubChannel=GetSubChannel(subChannelId);
 	if (pSubChannel==NULL) return S_OK;
 	return pSubChannel->SetTimeShiftParams(minFiles, maxFiles,maxFileSize);
 }
 STDMETHODIMP CMPFileWriter::StartTimeShifting(int subChannelId)
 {
+	CAutoLock lock(&m_Lock); 
 	CSubChannel* pSubChannel=GetSubChannel(subChannelId);
 	if (pSubChannel==NULL) return S_OK;
 	return pSubChannel->StartTimeShifting();
@@ -585,6 +588,7 @@ STDMETHODIMP CMPFileWriter::StartTimeShifting(int subChannelId)
 }	
 STDMETHODIMP CMPFileWriter::StopTimeShifting(int subChannelId)
 {
+	CAutoLock lock(&m_Lock); 
 	CSubChannel* pSubChannel=GetSubChannel(subChannelId);
 	if (pSubChannel==NULL) return S_OK;
 	return pSubChannel->StopTimeShifting();
@@ -592,6 +596,7 @@ STDMETHODIMP CMPFileWriter::StopTimeShifting(int subChannelId)
 
 STDMETHODIMP CMPFileWriter::PauseTimeShifting(int subChannelId, int onOff)
 {
+	CAutoLock lock(&m_Lock);
 	CSubChannel* pSubChannel=GetSubChannel(subChannelId);
 	if (pSubChannel==NULL) return S_OK;
 	return pSubChannel->PauseTimeShifting(onOff);
@@ -600,6 +605,7 @@ STDMETHODIMP CMPFileWriter::PauseTimeShifting(int subChannelId, int onOff)
 
 STDMETHODIMP CMPFileWriter::SetRecordingFileNameW(int subChannelId, wchar_t* pwszFileName)
 {
+	CAutoLock lock(&m_Lock); 
 	CSubChannel* pSubChannel=GetSubChannel(subChannelId);
 	if (pSubChannel==NULL) return S_OK;
 	return pSubChannel->SetRecordingFileNameW(pwszFileName);
@@ -608,12 +614,14 @@ STDMETHODIMP CMPFileWriter::SetRecordingFileNameW(int subChannelId, wchar_t* pws
 
 STDMETHODIMP CMPFileWriter::StartRecord(int subChannelId)
 {
+	CAutoLock lock(&m_Lock); 
 	CSubChannel* pSubChannel=GetSubChannel(subChannelId);
 	if (pSubChannel==NULL) return S_OK;
 	return pSubChannel->StartRecord();
 }	
 STDMETHODIMP CMPFileWriter::StopRecord(int subChannelId)
 {
+	CAutoLock lock(&m_Lock); 
 	CSubChannel* pSubChannel=GetSubChannel(subChannelId);
 	if (pSubChannel==NULL) return S_OK;
 	return pSubChannel->StopRecord();
@@ -668,18 +676,21 @@ STDMETHODIMP  CMPFileWriter::IsReceiving(BOOL* yesNo)
 }
 
 STDMETHODIMP CMPFileWriter::TTxSetCallBack(int subChannelId, IAnalogTeletextCallBack* callback){
+	CAutoLock lock(&m_Lock);
 	CSubChannel* pSubChannel=GetSubChannel(subChannelId);
 	if (pSubChannel==NULL) return S_OK;
 	return pSubChannel->TTxSetCallBack(callback);
 }
 
 STDMETHODIMP CMPFileWriter::SetVideoAudioObserver(int subChannelId, IAnalogVideoAudioObserver* callback){
+	CAutoLock lock(&m_Lock);
 	CSubChannel* pSubChannel=GetSubChannel(subChannelId);
 	if (pSubChannel==NULL) return S_OK;
 	return pSubChannel->SetVideoAudioObserver(callback);
 }
 
 STDMETHODIMP CMPFileWriter::SetRecorderVideoAudioObserver(int subChannelId, IAnalogVideoAudioObserver* callback){
+	CAutoLock lock(&m_Lock);
 	CSubChannel* pSubChannel=GetSubChannel(subChannelId);
 	if (pSubChannel==NULL) return S_OK;
 	return pSubChannel->SetRecorderVideoAudioObserver(callback);
@@ -728,7 +739,6 @@ STDMETHODIMP CMPFileWriter::DeleteChannel( int subChannelId)
 
 CSubChannel* CMPFileWriter::GetSubChannel(int subChannelId)
 {
-	CAutoLock lock(&m_Lock);
 	ivecChannels it = m_vecChannels.begin();
 	while (it != m_vecChannels.end())
 	{
@@ -763,6 +773,7 @@ STDMETHODIMP  CMPFileWriter::Reset()
 }
 STDMETHODIMP CMPFileWriter::SetChannelType(int subChannelId, int channelType)
 {
+	CAutoLock lock(&m_Lock);
 	CSubChannel* pSubChannel=GetSubChannel(subChannelId);
 	if (pSubChannel==NULL) return S_OK;
 	return pSubChannel->SetChannelType(channelType);

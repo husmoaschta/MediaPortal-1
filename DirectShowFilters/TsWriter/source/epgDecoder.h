@@ -60,7 +60,7 @@ typedef struct stEPGEvent
     if ( dateMJD != rhs.dateMJD) return (dateMJD < rhs.dateMJD);
     return timeUTC < rhs.timeUTC;
   }
-}EPGEvent;
+} EPGEvent;
 
 typedef struct stEPGChannel
 {
@@ -76,7 +76,7 @@ typedef struct stEPGChannel
 
 	map<DWORD,bool> mapSectionsReceived;
 	typedef map<DWORD,bool>::iterator imapSectionsReceived;
-}EPGChannel;
+} EPGChannel;
 
 class CEpgDecoder : public CDvbUtil
 

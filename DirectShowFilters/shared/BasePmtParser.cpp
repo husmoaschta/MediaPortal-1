@@ -82,7 +82,7 @@ bool CBasePmtParser::DecodePmtPidTable(CSection& section)
 
   try
 	{
-		bool lpcm_audio_found=false;
+    bool lpcm_audio_found=false;
     int program_number = section.table_id_extension;
     int pcr_pid=((section.Data[8]& 0x1F)<<8)+section.Data[9];
     int program_info_length = ((section.Data[10] & 0xF)<<8)+section.Data[11];

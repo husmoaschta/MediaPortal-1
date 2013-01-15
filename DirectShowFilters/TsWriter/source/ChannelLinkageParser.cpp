@@ -159,7 +159,6 @@ void CChannelLinkageParser::GetLinkedChannel (ULONG channelIndex,ULONG linkIndex
 void CChannelLinkageParser::OnTsPacket(CTsHeader& header, byte* tsPacket)
 {
 	if (m_bScanning==false) return;
-
 	CEnterCriticalSection enter(m_section);
 	sectionDecoder->OnTsPacket(header,tsPacket);
 }

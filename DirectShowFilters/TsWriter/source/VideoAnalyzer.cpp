@@ -42,6 +42,7 @@ CVideoAnalyzer::~CVideoAnalyzer(void)
   
 STDMETHODIMP CVideoAnalyzer::SetVideoPid( int videoPid)
 {
+	CEnterCriticalSection enter(m_section);
 	try
 	{
 		m_videoAudioAnalyzer.SetVideoPid(videoPid);
@@ -56,6 +57,7 @@ STDMETHODIMP CVideoAnalyzer::SetVideoPid( int videoPid)
 
 STDMETHODIMP CVideoAnalyzer::GetVideoPid( int* videoPid)
 {
+	CEnterCriticalSection enter(m_section);
 	try
 	{
 		*videoPid=m_videoAudioAnalyzer.GetVideoPid();
@@ -69,6 +71,7 @@ STDMETHODIMP CVideoAnalyzer::GetVideoPid( int* videoPid)
 
 STDMETHODIMP CVideoAnalyzer::SetAudioPid( int audioPid)
 {
+	CEnterCriticalSection enter(m_section);
 	try
 	{
 		m_videoAudioAnalyzer.SetAudioPid(audioPid);
@@ -83,6 +86,7 @@ STDMETHODIMP CVideoAnalyzer::SetAudioPid( int audioPid)
 
 STDMETHODIMP CVideoAnalyzer::GetAudioPid( int* audioPid)
 {
+	CEnterCriticalSection enter(m_section);
 	try
 	{
 		*audioPid=m_videoAudioAnalyzer.GetAudioPid();
@@ -96,6 +100,7 @@ STDMETHODIMP CVideoAnalyzer::GetAudioPid( int* audioPid)
 
 STDMETHODIMP CVideoAnalyzer::IsVideoEncrypted( int* yesNo)
 {
+	CEnterCriticalSection enter(m_section);
 	try
 	{
 		*yesNo = (m_videoAudioAnalyzer.IsVideoScrambled()?1:0);
@@ -109,6 +114,7 @@ STDMETHODIMP CVideoAnalyzer::IsVideoEncrypted( int* yesNo)
 
 STDMETHODIMP CVideoAnalyzer::IsAudioEncrypted( int* yesNo)
 {
+	CEnterCriticalSection enter(m_section);
 	try
 	{
 		*yesNo = (m_videoAudioAnalyzer.IsAudioScrambled()?1:0);
@@ -122,6 +128,7 @@ STDMETHODIMP CVideoAnalyzer::IsAudioEncrypted( int* yesNo)
 
 STDMETHODIMP CVideoAnalyzer::Reset()
 {
+	CEnterCriticalSection enter(m_section);
 	try
 	{
 		m_videoAudioAnalyzer.Reset();

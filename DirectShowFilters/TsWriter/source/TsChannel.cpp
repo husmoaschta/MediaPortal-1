@@ -30,7 +30,7 @@
 
 extern void LogDebug(const char *fmt, ...) ;
 
-CTsChannel::CTsChannel(LPUNKNOWN pUnk, HRESULT *phr,int id) 
+CTsChannel::CTsChannel(LPUNKNOWN pUnk, HRESULT *phr, int id) 
 {
 	m_id=id;
 	m_pVideoAnalyzer = new CVideoAnalyzer(pUnk,phr);
@@ -38,7 +38,7 @@ CTsChannel::CTsChannel(LPUNKNOWN pUnk, HRESULT *phr,int id)
 	m_pRecorder = new CDiskRecorder(RecordingMode::Recording);
 	m_pTimeShifting= new CDiskRecorder(RecordingMode::TimeShift);
 	m_pTeletextGrabber= new CTeletextGrabber(pUnk,phr);
-  m_pCaGrabber= new CCaGrabber(pUnk,phr);
+    m_pCaGrabber= new CCaGrabber(pUnk,phr);
 }
 
 CTsChannel::~CTsChannel(void)
@@ -91,8 +91,8 @@ void CTsChannel::OnTsPacket(byte* tsPacket)
 		m_pRecorder->OnTsPacket(tsPacket);
 		m_pTimeShifting->OnTsPacket(tsPacket);
 		m_pTeletextGrabber->OnTsPacket(tsPacket);
-    m_pCaGrabber->OnTsPacket(tsPacket);
-	}
+        m_pCaGrabber->OnTsPacket(tsPacket);
+   	}
 	catch(...)
 	{
 		LogDebug("exception in AnalyzeTsPacket");

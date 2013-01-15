@@ -28,21 +28,15 @@ extern bool DisableCRCCheck();
 
 CEpgParser::CEpgParser(void)
 {
-	// standard epg
-	//for (int i=0x4e; i <=0x6f;++i)
+
 	AddSectionDecoder(PID_EPG);
-	// DISH / BEV epg
-	//for (int i=0x80; i <=0xfe;++i) {
 	AddSectionDecoder(PID_DISH_EPG);
 	AddSectionDecoder(PID_BEV_EPG);
-	//}
-	//Freesat EPG
 	AddSectionDecoder(PID_FREESAT_EPG);
 	AddSectionDecoder(PID_FREESAT2_EPG);
-	// Premiere DIREKT Portal
 	AddSectionDecoder(PID_EPG_PREMIERE_DIREKT);
-	// Premiere SPORT Portal
 	AddSectionDecoder(PID_EPG_PREMIERE_SPORT);
+
 }
 
 CEpgParser::~CEpgParser(void)
@@ -64,9 +58,11 @@ void CEpgParser::Reset()
 		CSectionDecoder* pDecoder = m_vecDecoders[i];
 		pDecoder->Reset();
 	}
+
 	m_bGrabbing=false;
 	m_epgDecoder.ResetEPG();
 }
+
 void CEpgParser::GrabEPG()
 {
 	CEnterCriticalSection enter(m_section);
@@ -181,6 +177,17 @@ void CEpgParser::OnNewSection(int pid,int tableId,CSection& section)
 
 void CEpgParser::AddSectionDecoder(int pid)
 {
+    CEnterCriticalSection enter(m_section);
+	//Check to see if this Section has been added already!
+    for (int i=0; i < (int)m_vecDecoders.size();++i)
+	{
+		CSectionDecoder* pDecoder = m_vecDecoders[i];
+		if(pDecoder->GetPid()==pid)
+		{
+			return;
+		}
+	}
+
 	CSectionDecoder* pDecoder= new CSectionDecoder();
     pDecoder->SetPid(pid);
 	if (DisableCRCCheck())

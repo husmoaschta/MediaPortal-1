@@ -57,6 +57,7 @@ void CSectionDecoder::SetPid(int pid)
 
 int CSectionDecoder::GetPid()
 {
+
   return m_pid;
 }
 
@@ -81,7 +82,7 @@ void CSectionDecoder::OnTsPacket(byte* tsPacket)
 
 int CSectionDecoder::StartNewSection(byte* tsPacket,int index,int sectionLen)
 {
-	int newstart=-1;
+  int newstart=-1;
   int len=-1;
   if (sectionLen > -1)
   {
@@ -110,16 +111,17 @@ int CSectionDecoder::StartNewSection(byte* tsPacket,int index,int sectionLen)
 
 int CSectionDecoder::AppendSection(byte* tsPacket, int index, int sectionLen)
 {
-	int newstart=-1;
+   
+  int newstart=-1;
   int len=-1;
   if (index+sectionLen < 185)
   {
-		len=sectionLen+3;
+	len=sectionLen+3;
     newstart = index+sectionLen+3;
   }
   else
   {
-		newstart = 188;
+	newstart = 188;
     len=188-index;
   }
 	memcpy(&m_section.Data[m_section.BufferPos],&tsPacket[index],len);

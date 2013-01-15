@@ -35,20 +35,18 @@ CMhwParser::CMhwParser(void)
 	m_bDone=false;
 
   CSectionDecoder* pDecoder= new CSectionDecoder();
-  pDecoder->SetPid(PID_MHW1);
+    pDecoder->SetPid(PID_MHW1);
 	pDecoder->SetCallBack(this);
 	if (DisableCRCCheck())
 		pDecoder->EnableCrcCheck(false);
- // pDecoder->EnableLogging(true);
-  m_vecDecoders.push_back(pDecoder);
+    m_vecDecoders.push_back(pDecoder);
 
 	pDecoder= new CSectionDecoder();
-  pDecoder->SetPid(PID_MHW2);
+    pDecoder->SetPid(PID_MHW2);
 	pDecoder->SetCallBack(this);
 	if (DisableCRCCheck())
 		pDecoder->EnableCrcCheck(false);
- // pDecoder->EnableLogging(true);
-  m_vecDecoders.push_back(pDecoder);
+     m_vecDecoders.push_back(pDecoder);
 }
 
 CMhwParser::~CMhwParser(void)
@@ -90,10 +88,9 @@ void CMhwParser::OnTsPacket(CTsHeader& header,byte* tsPacket)
 {
   if (m_bGrabbing==false) return;
   
-  int pid=((tsPacket[1] & 0x1F) <<8)+tsPacket[2];
+  CEnterCriticalSection enter(m_section);
+  int pid=((tsPacket[1] & 0x1F) <<8 ) + tsPacket[2];
   if (pid!=PID_MHW1 && pid!=PID_MHW2) return;
-
-	CEnterCriticalSection enter(m_section);
 	for (int i=0; i < (int)m_vecDecoders.size();++i)
 	{
 		CSectionDecoder* pDecoder = m_vecDecoders[i];
@@ -176,7 +173,7 @@ void CMhwParser::OnNewSection(int pid, int tableId, CSection& sections)
 void CMhwParser::GrabEPG()
 {
   LogDebug("mhw grab");
-	CEnterCriticalSection enter(m_section);
+	//CEnterCriticalSection enter(m_section);
 	Reset();
 	m_bGrabbing=true;
 	m_bDone=false;

@@ -431,10 +431,9 @@ CUnknown * WINAPI CMpTs::CreateInstance(LPUNKNOWN punk, HRESULT *phr)
 //
 STDMETHODIMP CMpTs::NonDelegatingQueryInterface(REFIID riid, void ** ppv)
 {
-  CheckPointer(ppv,E_POINTER);
-  // CAutoLock lock(&m_Lock);
-
-  // Do we have this interface
+     CheckPointer(ppv,E_POINTER);
+ 
+     // Do we have this interface
 	if (riid == IID_ITSChannelScan)
 	{
 		//LogDebug("CMpTs:NonDelegatingQueryInterface IID_ITSChannelScan");
@@ -459,7 +458,7 @@ STDMETHODIMP CMpTs::NonDelegatingQueryInterface(REFIID riid, void ** ppv)
 	{
 		//LogDebug("CMpTs:NonDelegatingQueryInterface other");
     return m_pFilter->NonDelegatingQueryInterface(riid, ppv);
-  } 
+  }
  
   return CUnknown::NonDelegatingQueryInterface(riid, ppv);
 }
@@ -501,9 +500,9 @@ BOOL APIENTRY DllMain(HANDLE hModule, DWORD  dwReason, LPVOID lpReserved)
 
 void CMpTs::AnalyzeTsPacket(byte* tsPacket)
 {
+	CAutoLock lock(&m_Lock);
 	try
-	{
-    CAutoLock lock(&m_Lock);
+	{    
     for (int i=0; i < (int)m_vecChannels.size();++i)
     {
       m_vecChannels[i]->OnTsPacket(tsPacket);
@@ -521,18 +520,18 @@ void CMpTs::AnalyzeTsPacket(byte* tsPacket)
 
 STDMETHODIMP CMpTs::AddChannel( int* handle)
 {
-  CAutoLock lock(&m_Lock);
-	HRESULT hr;
-  CTsChannel* channel = new CTsChannel(GetOwner(), &hr,m_id); 
-	*handle=m_id;
-	m_id++;
-  m_vecChannels.push_back(channel);
-  return S_OK;
+     CAutoLock lock(&m_Lock);
+	 HRESULT hr;
+     CTsChannel* channel = new CTsChannel(GetOwner(), &hr,m_id); 
+	 *handle=m_id;
+	 m_id++;
+     m_vecChannels.push_back(channel);
+     return S_OK;
 }
 
-STDMETHODIMP CMpTs::DeleteChannel( int handle)
+STDMETHODIMP CMpTs::DeleteChannel(int handle)
 {
-  CAutoLock lock(&m_Lock);
+    CAutoLock lock(&m_Lock);
 	try
 	{
 		ivecChannels it = m_vecChannels.begin();
@@ -542,10 +541,10 @@ STDMETHODIMP CMpTs::DeleteChannel( int handle)
 			{
 				delete *it;
 				m_vecChannels.erase(it);
-        if (m_vecChannels.size()==0)
-        {
-          m_id=0;
-        }
+			    if (m_vecChannels.size()==0)
+                {
+                m_id=0;
+                }
 				return S_OK;
 			}
 			++it;
@@ -560,8 +559,7 @@ STDMETHODIMP CMpTs::DeleteChannel( int handle)
 
 CTsChannel* CMpTs::GetTsChannel(int handle)
 {
-    CAutoLock lock(&m_Lock);
-	ivecChannels it = m_vecChannels.begin();
+ 	ivecChannels it = m_vecChannels.begin();
 	while (it != m_vecChannels.end())
 	{
 		if ((*it)->Handle()==handle)
@@ -669,6 +667,7 @@ STDMETHODIMP CMpTs::PmtGetPMTData (int handle,BYTE *pmtData)
 
 STDMETHODIMP CMpTs::RecordSetRecordingFileNameW( int handle, wchar_t* pwszFileName)
 {
+  CAutoLock lock(&m_Lock);
   CTsChannel* pChannel=GetTsChannel(handle);
   if (pChannel==NULL) return S_OK;
   pChannel->m_pRecorder->SetFileNameW(pwszFileName);
@@ -677,7 +676,7 @@ STDMETHODIMP CMpTs::RecordSetRecordingFileNameW( int handle, wchar_t* pwszFileNa
 
 STDMETHODIMP CMpTs::RecordStartRecord( int handle)
 {
-   CAutoLock lock(&m_Lock);
+  CAutoLock lock(&m_Lock);
   CTsChannel* pChannel=GetTsChannel(handle);
   if (pChannel==NULL) return S_OK;
 	if (pChannel->m_pRecorder->Start())
@@ -691,7 +690,7 @@ STDMETHODIMP CMpTs::RecordStopRecord( int handle)
   CAutoLock lock(&m_Lock); 
   CTsChannel* pChannel=GetTsChannel(handle);
   if (pChannel==NULL) return S_OK;
-	pChannel->m_pRecorder->Stop(  );
+	pChannel->m_pRecorder->Stop();
 	return S_OK;
 }
 

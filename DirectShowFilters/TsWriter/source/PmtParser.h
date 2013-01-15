@@ -21,8 +21,10 @@
 #pragma once
 
 #include "..\..\shared\BasePmtParser.h"
-
+#include "criticalsection.h"
+#include "entercriticalsection.h"
 using namespace std;
+using namespace Mediaportal;
 
 typedef struct stPidInfo2
 {
@@ -63,6 +65,7 @@ public:
 
 private:
 	IPmtCallBack2* m_pmtCallback2;
+	CCriticalSection m_section;
   //FIXME: this older code version is only for backward compatibility with dependent classes.
   //       proper fix is to change code of all classes that depend on PidInfo2 in favour of CPidTable!
 	vector<PidInfo2> m_pidInfos2;

@@ -132,7 +132,6 @@ HRESULT MultiFileWriter::OpenFile(LPCWSTR pszFileName)
 HRESULT MultiFileWriter::CloseFile()
 {
 	CAutoLock lock(&m_Lock);
-
 	if (m_hTSBufferFile == INVALID_HANDLE_VALUE)
 	{
 		return S_OK;

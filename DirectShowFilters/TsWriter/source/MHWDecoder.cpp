@@ -69,17 +69,18 @@ bool CMhwDecoder::ParseChannels(byte* data, int dataLen)
 	LogDebug("mhw-epg: channels:%d", m_vecChannels.size()); 
 	return true;
 }
+
 bool CMhwDecoder::ParseSummaries(byte* data, int maxLen)
 {
 	if (data==NULL) return false;
 
 	if (maxLen < 12|| maxLen>4096) 
 		return false;	/* Invalid Data */
-
+	CEnterCriticalSection lock (m_critSection);
+	
 	if (data[0] !=0x90)
 		return false;
-				
-	CEnterCriticalSection lock (m_critSection);
+			
 	int dataLen=((data[1]-0x70)<<8)+data[2];
 	if (dataLen<12)
 		return false;

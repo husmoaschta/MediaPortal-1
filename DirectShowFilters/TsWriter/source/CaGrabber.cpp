@@ -58,7 +58,7 @@ STDMETHODIMP CCaGrabber::SetCallBack( ICACallback* callback)
 {
 	CEnterCriticalSection enter(m_section);
 	LogDebug("cagrabber: set callback:%x", callback);
-  m_pCallback=callback;
+    m_pCallback=callback;
 	return S_OK;
 }
 
@@ -73,7 +73,7 @@ void CCaGrabber::OnNewSection(CSection& section)
 {
 	try
 	{
-    // CEnterCriticalSection already done in OnTsPacket
+    	CEnterCriticalSection enter(m_section);
 		if (section.table_id!=1) return; 	
 		if (section.version_number == m_iCaVersion) return;
 

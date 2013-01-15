@@ -88,16 +88,12 @@ CDiskRecorder::CDiskRecorder(RecordingMode mode)
 	m_params.maxFiles=20;
 	m_params.maxSize=268435424;
 	m_params.minFiles=6;
-
 	m_iPmtPid=-1;
 	m_pcrPid=-1;
 	m_iServiceId=-1;
-
 	m_bRunning=false;
 	m_pTimeShiftFile=NULL;
-
-  m_iTsContinuityCounter=0;
-
+    m_iTsContinuityCounter=0;
 	m_bStartPcrFound=false;
 	m_bDetermineNewStartPcr=false;
 	m_iPatVersion=0;
@@ -146,9 +142,8 @@ CDiskRecorder::CDiskRecorder(RecordingMode mode)
 
 
 }
-//*******************************************************************
-//* dtor
-//*******************************************************************
+
+
 CDiskRecorder::~CDiskRecorder(void)
 {
 	CEnterCriticalSection enter(m_section);
@@ -204,6 +199,7 @@ void CDiskRecorder::SetFileNameW(wchar_t* pwszFileName)
 	{
 		WriteLog(L"SetFilename exception");
 	}
+	
 }
 
 bool CDiskRecorder::Start()
@@ -257,7 +253,7 @@ bool CDiskRecorder::Start()
 		}
 		m_iPmtContinuityCounter=-1;
 		m_iPatContinuityCounter=-1;
-    m_iTsContinuityCounter=0;
+        m_iTsContinuityCounter=0;
 		m_bDetermineNewStartPcr=false;
 		m_bStartPcrFound=false;
 		m_mapLastPtsDts.clear();
@@ -310,7 +306,7 @@ void CDiskRecorder::Stop()
 
 void CDiskRecorder::Pause(BYTE onOff) 
 {
-	CEnterCriticalSection enter(m_section);
+  CEnterCriticalSection enter(m_section);
   if (onOff!=0)
   {
 		m_bClearTsQueue=true;
@@ -358,7 +354,7 @@ void CDiskRecorder::Reset()
 		m_iPacketCounter=0;
 		m_bPaused=FALSE;
 		m_mapLastPtsDts.clear();
-    m_iTsContinuityCounter=0;
+        m_iTsContinuityCounter=0;
 
 		//	Reset the write buffer throttle
 		LogDebug("CDiskRecorder::Reset() - Reset write buffer throttle");
@@ -381,7 +377,7 @@ void CDiskRecorder::SetPmtPid(int pmtPid,int serviceId,byte* pmtData,int pmtLeng
 {
 	CEnterCriticalSection enter(m_section);
 	WriteLog("Received from TvService: pmt pid:0x%x serviceId: 0x%x pmtlength:%d",pmtPid,serviceId,pmtLength);
-  m_iPmtPid=pmtPid;
+    m_iPmtPid=pmtPid;
 	m_iServiceId=serviceId;
 	m_pPmtParser->Reset();
 	m_pPmtParser->SetFilter(pmtPid,serviceId);
@@ -415,6 +411,7 @@ void CDiskRecorder::SetPmtPid(int pmtPid,int serviceId,byte* pmtData,int pmtLeng
 
 void CDiskRecorder::SetVideoAudioObserver (IVideoAudioObserver* callback)
 {
+  CEnterCriticalSection enter(m_section);
   if(callback)
   {
     WriteLog("SetVideoAudioObserver observer ok");
@@ -510,15 +507,16 @@ void CDiskRecorder::GetTotalBytes(int* packetsProcessed)
 
 void CDiskRecorder::OnTsPacket(byte* tsPacket)
 {
+	CEnterCriticalSection enter(m_section);
 	if (m_bPaused) return;
 	if (m_bRunning)
 	{
-		CEnterCriticalSection enter(m_section);		
+		//CEnterCriticalSection enter(m_section);		
 		CTsHeader header(tsPacket);
 		if (header.Pid==0x1fff) return;
 		if (header.SyncByte!=0x47) return;
 		if (header.TransportError) return;
-  	WriteTs(tsPacket);
+  	    WriteTs(tsPacket);
 	}
 }
 
@@ -640,6 +638,9 @@ void CDiskRecorder::WriteToTimeshiftFile(byte* buffer, int len)
   if (buffer == NULL) return;
   if (len != 188) return; //sanity check
   if (m_pWriteBuffer == NULL) return; //sanity check
+  
+  CEnterCriticalSection enter(m_section);
+
   if (m_bPaused || m_bClearTsQueue) 
   {
      try
@@ -660,7 +661,7 @@ void CDiskRecorder::WriteToTimeshiftFile(byte* buffer, int len)
       }
       if (m_bPaused) return;							// If m_bPaused == false, this packet should be stored.
     }
-    CEnterCriticalSection enter(m_section);
+   
 
     try  
     {      
@@ -806,6 +807,7 @@ bool CDiskRecorder::IsStreamWanted(int stream_type)
 
 void CDiskRecorder::AddStream(PidInfo2 pidInfo)
 {
+  CEnterCriticalSection enter(m_section);
   ivecPidInfo2 it = m_vecPids.begin();
   while (it!=m_vecPids.end())
   {
@@ -873,6 +875,7 @@ void CDiskRecorder::AddStream(PidInfo2 pidInfo)
 
 void CDiskRecorder::Flush()
 {
+	CEnterCriticalSection enter(m_section);
 	try
 	{
 		if (m_iWriteBufferPos>0)
@@ -994,15 +997,20 @@ void CDiskRecorder::WriteTs(byte* tsPacket)
     {
       // If the packet has no payload then don't drop it - it might have PCR in the adaption field
       // that is not actually scrambled. This is a workaround for bad CAM behaviour.
-      if (!m_tsHeader.AdaptionFieldOnly())
-      {
-        return;
-      }
-      // Mark the packet as not scrambled.
-      m_tsHeader.TScrambling = 0;
-      tsPacket[3] = tsPacket[3] & 0x3f;
-    }
-		if (m_tsHeader.TransportError) 	{ LogDebug("Recorder:Pid %x : Transport error flag set!", m_tsHeader.Pid) ; return ; }
+          if (!m_tsHeader.AdaptionFieldOnly())
+          {
+          return;
+          }
+          // Mark the packet as not scrambled.
+          m_tsHeader.TScrambling = 0;
+          tsPacket[3] = tsPacket[3] & 0x3f;
+		}
+
+		if (m_tsHeader.TransportError) 	
+		{ 
+			LogDebug("Recorder:Pid %x : Transport error flag set!", m_tsHeader.Pid) ; 
+			return ; 
+		}
 
 		if (m_iPacketCounter>=100)
 		{
@@ -1022,7 +1030,7 @@ void CDiskRecorder::WriteTs(byte* tsPacket)
 			if (m_tsHeader.Pid==info.elementaryPid)
 			{
 				if (m_tsHeader.AdaptionFieldLength && (tsPacket[5] & 0x80))
-          LogDebug("Recorder:Pid %x : Discontinuity header bit set!", m_tsHeader.Pid);
+                   LogDebug("Recorder:Pid %x : Discontinuity header bit set!", m_tsHeader.Pid);
 				if (info.ccPrev!=255)
 				{
 					// Do not check 1st packet after channel change.
@@ -1031,7 +1039,7 @@ void CDiskRecorder::WriteTs(byte* tsPacket)
 						// Check Ts packet continuity with payload, remove duplicate frames.
 						if ((m_tsHeader.ContinuityCounter != ((info.ccPrev+1) & 0x0F)))
 						{
-              m_iTsContinuityCounter++;
+                        m_iTsContinuityCounter++;
 							/*
               if (m_tsHeader.ContinuityCounter == info.ccPrev)
 							{	
@@ -1050,6 +1058,7 @@ void CDiskRecorder::WriteTs(byte* tsPacket)
 							else
               */
 						  LogDebug("Recorder:Pid %x Continuity error... %x ( prev %x ) - bad signal?", m_tsHeader.Pid, m_tsHeader.ContinuityCounter, info.ccPrev) ;
+	
 						}
 					}
 					else
@@ -1059,6 +1068,7 @@ void CDiskRecorder::WriteTs(byte* tsPacket)
 								LogDebug("Recorder:Pid %x , No PayLoad, Continuity Counter should be the same ! %x ( prev %x )", m_tsHeader.Pid, m_tsHeader.ContinuityCounter, info.ccPrev) ;
 					}
 				}
+
 				info.ccPrev = m_tsHeader.ContinuityCounter ;
 
 				memcpy(info.m_Pkt,tsPacket,188);
@@ -1120,7 +1130,8 @@ void CDiskRecorder::WriteTs(byte* tsPacket)
 
           // Clear the PCR flag.
           info.m_Pkt[ADAPTION_FIELD_FLAG_OFFSET] &= (~PCR_FLAG_BIT);
-          // Overwrite the PCR with the rest of the adaption field. The -1 is for the adaption field flag byte.
+
+		  // Overwrite the PCR with the rest of the adaption field. The -1 is for the adaption field flag byte.
           memcpy(&info.m_Pkt[PCR_OFFSET], &tsPacket[PCR_OFFSET + PCR_LENGTH], m_tsHeader.AdaptionFieldLength - PCR_LENGTH - 1);
           // The end of the adaption field is now stuffing.
           memset(&info.m_Pkt[PCR_OFFSET + m_tsHeader.AdaptionFieldLength - PCR_LENGTH - 1], 0xff, PCR_LENGTH);

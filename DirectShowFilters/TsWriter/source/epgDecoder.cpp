@@ -51,7 +51,6 @@ CEpgDecoder::~CEpgDecoder()
 
 HRESULT CEpgDecoder::DecodeEPG(byte* buf,int len,int PID)
 {
-	CEnterCriticalSection lock (m_critSection);
 	try
 	{
 		if (!m_bParseEPG) 
@@ -60,7 +59,7 @@ HRESULT CEpgDecoder::DecodeEPG(byte* buf,int len,int PID)
       return E_FAIL;
 		if (buf==NULL)
       return E_FAIL;
-
+		CEnterCriticalSection lock (m_critSection);
 		time_t currentTime=time(NULL);
 		time_t timespan=currentTime-m_epgTimeout;
 		
@@ -113,7 +112,7 @@ HRESULT CEpgDecoder::DecodeEPG(byte* buf,int len,int PID)
 			return E_FAIL;
 		
 		EPGChannel& channel=it->second; 
-		DWORD sectionKey;
+		unsigned long sectionKey;
 		//did we already receive this section ?
 		try
 		{
@@ -357,7 +356,6 @@ void CEpgDecoder::DecodeParentalRatingDescriptor(byte* data, EPGEvent& epgEvent)
 
 HRESULT CEpgDecoder::DecodePremierePrivateEPG(byte* buf,int len)
 {
-	CEnterCriticalSection lock (m_critSection);
 	try
 	{
 		if (!m_bParseEPG) 
@@ -366,7 +364,7 @@ HRESULT CEpgDecoder::DecodePremierePrivateEPG(byte* buf,int len)
       return E_FAIL;
 		if (buf==NULL)
       return E_FAIL;
-
+        CEnterCriticalSection lock (m_critSection);	
 		time_t currentTime=time(NULL);
 		time_t timespan=currentTime-m_epgTimeout;
 		if (timespan>60)
@@ -1126,16 +1124,14 @@ string CEpgDecoder::FreesatHuffmanToString(BYTE *src, int size)
 
 void CEpgDecoder::ResetEPG()
 {
-	CEnterCriticalSection lock (m_critSection);
+    CEnterCriticalSection lock (m_critSection);
 	LogDebug("epg:ResetEPG()");
 	EPGChannel ch;
 	EPGEvent evt;
-
 	m_prevChannel=ch;
 	m_prevChannelIndex=-1;
 	m_prevEvent = evt;
 	m_prevEventIndex=-1;
-
 	m_mapEPG.clear();
 	m_bParseEPG=false;
 	m_bEpgDone=false;

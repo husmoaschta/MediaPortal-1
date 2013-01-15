@@ -45,8 +45,8 @@ DEFINE_GUID(IID_TSFilter, 0x5eb9f392, 0xe7fd, 0x4071, 0x8e, 0x44, 0x35, 0x90, 0x
 DECLARE_INTERFACE_(ITSFilter, IUnknown)
 {
 	STDMETHOD(AddChannel)(THIS_ int* handle)PURE;
-  STDMETHOD(DeleteChannel)(THIS_ int handle)PURE;
-  STDMETHOD(DeleteAllChannels)()PURE;
+    STDMETHOD(DeleteChannel)(THIS_ int handle)PURE;
+    STDMETHOD(DeleteAllChannels)()PURE;
 
 	STDMETHOD(AnalyzerSetVideoPid)(THIS_ int handle, int videoPid)PURE;
 	STDMETHOD(AnalyzerGetVideoPid)(THIS_ int handle,  int* videoPid)PURE;
