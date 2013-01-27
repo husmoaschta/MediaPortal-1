@@ -32,7 +32,7 @@ namespace TvPlugin
       this.cbRememberLastGroup = new MediaPortal.UserInterface.Controls.MPCheckBox();
       this.comboBoxGroups = new System.Windows.Forms.ComboBox();
       this.label1 = new System.Windows.Forms.Label();
-      this.cbShowAllChannelsGroup = new MediaPortal.UserInterface.Controls.MPCheckBox();
+      this.cbHideAllChannelsGroup = new MediaPortal.UserInterface.Controls.MPCheckBox();
       this.mpButtonCancel = new MediaPortal.UserInterface.Controls.MPButton();
       this.mpButtonOk = new MediaPortal.UserInterface.Controls.MPButton();
       this.groupBox5 = new MediaPortal.UserInterface.Controls.MPGroupBox();
@@ -48,7 +48,7 @@ namespace TvPlugin
       this.groupBox1.Controls.Add(this.cbRememberLastGroup);
       this.groupBox1.Controls.Add(this.comboBoxGroups);
       this.groupBox1.Controls.Add(this.label1);
-      this.groupBox1.Controls.Add(this.cbShowAllChannelsGroup);
+      this.groupBox1.Controls.Add(this.cbHideAllChannelsGroup);
       this.groupBox1.Location = new System.Drawing.Point(13, 13);
       this.groupBox1.Name = "groupBox1";
       this.groupBox1.Size = new System.Drawing.Size(235, 118);
@@ -91,15 +91,15 @@ namespace TvPlugin
       // 
       // cbShowAllChannelsGroup
       // 
-      this.cbShowAllChannelsGroup.AutoSize = true;
-      this.cbShowAllChannelsGroup.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
-      this.cbShowAllChannelsGroup.Location = new System.Drawing.Point(13, 19);
-      this.cbShowAllChannelsGroup.Name = "cbShowAllChannelsGroup";
-      this.cbShowAllChannelsGroup.Size = new System.Drawing.Size(169, 17);
-      this.cbShowAllChannelsGroup.TabIndex = 0;
-      this.cbShowAllChannelsGroup.Text = "Show the \"All channels group\"";
-      this.cbShowAllChannelsGroup.UseVisualStyleBackColor = true;
-      this.cbShowAllChannelsGroup.Click += new System.EventHandler(this.cbShowAllChannelsGroup_Click);
+      this.cbHideAllChannelsGroup.AutoSize = true;
+      this.cbHideAllChannelsGroup.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
+      this.cbHideAllChannelsGroup.Location = new System.Drawing.Point(13, 19);
+      this.cbHideAllChannelsGroup.Name = "cbShowAllChannelsGroup";
+      this.cbHideAllChannelsGroup.Size = new System.Drawing.Size(169, 17);
+      this.cbHideAllChannelsGroup.TabIndex = 0;
+      this.cbHideAllChannelsGroup.Text = "Hide the \"All channels group\"";
+      this.cbHideAllChannelsGroup.UseVisualStyleBackColor = true;
+      this.cbHideAllChannelsGroup.Click += new System.EventHandler(this.cbHideAllChannelsGroup_Click);
       // 
       // mpButtonCancel
       // 
@@ -177,7 +177,7 @@ namespace TvPlugin
     #endregion
 
     private System.Windows.Forms.GroupBox groupBox1;
-    private MediaPortal.UserInterface.Controls.MPCheckBox cbShowAllChannelsGroup;
+    private MediaPortal.UserInterface.Controls.MPCheckBox cbHideAllChannelsGroup;
     private MediaPortal.UserInterface.Controls.MPButton mpButtonCancel;
     private MediaPortal.UserInterface.Controls.MPButton mpButtonOk;
     private System.Windows.Forms.ComboBox comboBoxGroups;

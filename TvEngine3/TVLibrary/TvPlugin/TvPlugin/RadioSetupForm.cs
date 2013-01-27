@@ -34,7 +34,7 @@ namespace TvPlugin
   {
     #region variables
 
-    private bool _showAllChannelsGroup = true;
+    private bool _hideAllChannelsGroup = false;
     private bool _rememberLastGroup = true;
     private string _rootGroup = "(none)";
     private bool _autoTurnOnRadio = false;
@@ -47,7 +47,7 @@ namespace TvPlugin
     {
       using (Settings xmlreader = new MPSettings())
       {
-        _showAllChannelsGroup = xmlreader.GetValueAsBool("myradio", "showallchannelsgroup", true);
+        _hideAllChannelsGroup = xmlreader.GetValueAsBool("myradio", "hideAllChannelsGroup", false);
         _rememberLastGroup = xmlreader.GetValueAsBool("myradio", "rememberlastgroup", true);
         _rootGroup = xmlreader.GetValueAsString("myradio", "rootgroup", "(none)");
         _autoTurnOnRadio = xmlreader.GetValueAsBool("myradio", "autoturnonradio", false);
@@ -58,7 +58,7 @@ namespace TvPlugin
     {
       using (Settings xmlreader = new MPSettings())
       {
-        xmlreader.SetValueAsBool("myradio", "showallchannelsgroup", _showAllChannelsGroup);
+        xmlreader.SetValueAsBool("myradio", "hideAllChannelsGroup", _hideAllChannelsGroup);
         xmlreader.SetValueAsBool("myradio", "rememberlastgroup", _rememberLastGroup);
         xmlreader.SetValue("myradio", "rootgroup", _rootGroup);
         xmlreader.SetValueAsBool ("myradio", "autoturnonradio",_autoTurnOnRadio);
@@ -81,7 +81,7 @@ namespace TvPlugin
       appSettings.Set("GentleConfigFile", gentle);
 
       cbTurnOnRadio.Checked = _autoTurnOnRadio;
-      cbShowAllChannelsGroup.Checked = _showAllChannelsGroup;
+      cbHideAllChannelsGroup.Checked = _hideAllChannelsGroup;
       cbRememberLastGroup.Checked = _rememberLastGroup;
       comboBoxGroups.Items.Clear();
       comboBoxGroups.Items.Add("(none)");
@@ -106,9 +106,9 @@ namespace TvPlugin
       comboBoxGroups.SelectedIndex = selectedIdx;
     }
 
-    private void cbShowAllChannelsGroup_Click(object sender, EventArgs e)
+    private void cbHideAllChannelsGroup_Click(object sender, EventArgs e)
     {
-      _showAllChannelsGroup = cbShowAllChannelsGroup.Checked;
+      _hideAllChannelsGroup = cbHideAllChannelsGroup.Checked;
     }
 
     private void cbRememberLastGroup_CheckedChanged(object sender, EventArgs e)
