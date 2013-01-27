@@ -33,7 +33,7 @@ namespace TvPlugin
   {
     #region variables
 
-    private bool _hideAllChannelsGroup = true;
+    private bool _hideAllChannelsGroup = false;
     private bool _rememberLastGroup = true;
     private string _rootGroup = "(none)";
     private bool _autoTurnOnRadio = false;
