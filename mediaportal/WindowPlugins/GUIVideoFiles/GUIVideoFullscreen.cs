@@ -165,7 +165,7 @@ namespace MediaPortal.GUI.Video
       using (Profile.Settings xmlreader = new Profile.MPSettings())
       {
         m_iMaxTimeOSDOnscreen = 1000 * xmlreader.GetValueAsInt("movieplayer", "osdtimeout", 5);
-        bool BDInternalMenu = xmlreader.GetValueAsBool("bdplayer", "useInternalBDMenu", true);
+        bool BDInternalMenu = xmlreader.GetValueAsBool("bdplayer", "useInternalBDPlayer", true);
 
         if (BDInternalMenu && g_Player.CurrentFile.EndsWith(".bdmv"))
         {

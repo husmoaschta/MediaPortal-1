@@ -1314,7 +1314,7 @@ namespace MediaPortal.Player
           }
           using (MediaPortal.Profile.Settings xmlreader = new MediaPortal.Profile.MPSettings())
           {
-            _BDInternalMenu = xmlreader.GetValueAsBool("bdplayer", "useInternalBDMenu", true);
+            _BDInternalMenu = xmlreader.GetValueAsBool("bdplayer", "useInternalBDPlayer", true);
           }
           if (_BDInternalMenu && extension == ".bdmv")
             AskForRefresh = false;

@@ -317,7 +317,7 @@ namespace MediaPortal.GUI.Video
         _howToPlayAll = xmlreader.GetValueAsInt("movies", "playallinfolder", 3);
         _watchedPercentage = xmlreader.GetValueAsInt("movies", "playedpercentagewatched", 95);
         _videoInfoInShare = xmlreader.GetValueAsBool("moviedatabase", "movieinfoshareview", false);
-        _BDInternalMenu = xmlreader.GetValueAsBool("bdplayer", "useInternalBDMenu", true);
+        _BDInternalMenu = xmlreader.GetValueAsBool("bdplayer", "useInternalBDPlayer", true);
 
         _virtualDirectory = VirtualDirectories.Instance.Movies;
 		    // External player
