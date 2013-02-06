@@ -398,34 +398,30 @@ namespace MediaPortal.GUI.Video
         }
         else // Nfo support
         {
-          try
+          string path = string.Empty;
+          int pathIndex = 0;
+          
+          if (fileName.ToUpperInvariant().Contains(@"\BDMV"))
           {
-            string path = string.Empty;
-            int pathIndex = 0;
-
-            if (fileName.ToUpperInvariant().Contains(@"\BDMV"))
-            {
-              pathIndex = fileName.ToUpperInvariant().LastIndexOf(@"\BDMV");
-              path = fileName.Remove(pathIndex);
-            }
-            else if (fileName.ToUpperInvariant().Contains(@"\VIDEO_TS\"))
-            {
-              pathIndex = fileName.ToUpperInvariant().LastIndexOf(@"\VIDEO_TS\");
-              path = fileName.Remove(pathIndex);
-            }
-            else
-            {
-              path = Path.GetDirectoryName(fileName);
-            }
-
-            IMDBMovie.FetchMovieNfo(path, fileName, ref movieDetails);
-
-            if (!movieDetails.IsEmpty)
-            {
-              bMovieInfoFound = true;
-            }
+            pathIndex = fileName.ToUpperInvariant().LastIndexOf(@"\BDMV");
+            path = fileName.Remove(pathIndex);
           }
-          catch (Exception) { }
+          else if (fileName.ToUpperInvariant().Contains(@"\VIDEO_TS\"))
+          {
+            pathIndex = fileName.ToUpperInvariant().LastIndexOf(@"\VIDEO_TS\");
+            path = fileName.Remove(pathIndex);
+          }
+          else if (!String.IsNullOrEmpty(fileName))
+          {
+            path = Path.GetDirectoryName(fileName);
+          }
+          
+          IMDBMovie.FetchMovieNfo(path, fileName, ref movieDetails);
+
+          if (!movieDetails.IsEmpty)
+          {
+            bMovieInfoFound = true;
+          }
         }
         if (bMovieInfoFound)
         {
@@ -447,7 +443,7 @@ namespace MediaPortal.GUI.Video
           }
           else if (fileName.ToLower().Contains("index.bdmv")) // BD folder title check
           {
-            string title = selectBdHandler.GetBDFolderName(fileName);
+            string title = selectBdHandler.GetDiscTitle(fileName);
             // get the name when play BD directly from Drive letter
             if (String.IsNullOrEmpty(title))
             {
@@ -481,7 +477,7 @@ namespace MediaPortal.GUI.Video
             }
             else
             {
-              string title = selectBdHandler.GetBDFolderName(fileName);
+              string title = selectBdHandler.GetDiscTitle(fileName);
               // get the name when play BD directly from Drive letter
               if (String.IsNullOrEmpty(title))
               {

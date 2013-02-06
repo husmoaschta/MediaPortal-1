@@ -655,8 +655,8 @@ namespace MediaPortal.Player
         if (Util.Utils.IsISOImage(currentFile))
         {
           if (!String.IsNullOrEmpty(DaemonTools.GetVirtualDrive()) &&
-              IsBDDirectory(DaemonTools.GetVirtualDrive()) ||
-              IsDvdDirectory(DaemonTools.GetVirtualDrive()))
+              (IsBDDirectory(DaemonTools.GetVirtualDrive()) ||
+              IsDvdDirectory(DaemonTools.GetVirtualDrive())))
           {
             DaemonTools.UnMount();
           }
