@@ -7,13 +7,11 @@
 //------------------------------------------------------------------------------
 
 
-#include <streams.h>
+#include "streams.h"
 #include <limits.h>
 #include <dvdmedia.h>
 #include <strsafe.h>
-#include <checkbmi.h>
-
-#define UNUSED_ALWAYS(x) x
+#include "checkbmi.h"
 
 static UINT MsgDestroy;
 
@@ -427,7 +425,7 @@ LRESULT CALLBACK WndProc(HWND hwnd,         // Window handle
     // structure.  IF we get any messages before WM_NCCREATE we will
     // pass them to DefWindowProc.
 
-    CBaseWindow *pBaseWindow = _GetWindowLongPtr<CBaseWindow*>(hwnd,0);
+    CBaseWindow *pBaseWindow = (CBaseWindow *)GetWindowLongPtr(hwnd,0);
 
     if (pBaseWindow == NULL) {
 
@@ -455,7 +453,10 @@ LRESULT CALLBACK WndProc(HWND hwnd,         // Window handle
         SetLastError(0);  // because of the way SetWindowLong works
 #endif
 
-        LONG_PTR rc = _SetWindowLongPtr(hwnd, (DWORD) 0, pBaseWindow);
+#ifdef _DEBUG
+        LONG_PTR rc =
+#endif
+			SetWindowLongPtr(hwnd, (DWORD) 0, (LONG_PTR)pBaseWindow);
 
 
 #ifdef _DEBUG
@@ -1005,6 +1006,7 @@ void CDrawImage::UpdateColourTable(HDC hdc,__in BITMAPINFOHEADER *pbmi)
 
     // Should always succeed but check in debug builds
     ASSERT(uiReturn == pbmi->biClrUsed);
+	UNREFERENCED_PARAMETER(uiReturn);
 }
 
 
@@ -2284,7 +2286,7 @@ DWORD CImageDisplay::CountPrefixBits(DWORD Field)
     DWORD Mask = 1;
     DWORD Count = 0;
 
-    while (TRUE) {
+    for (;;) {
         if (Field & Mask) {
             return Count;
         }
@@ -2449,7 +2451,7 @@ HRESULT CImageDisplay::UpdateFormat(__inout VIDEOINFO *pVideoInfo)
     ASSERT(pVideoInfo);
 
     BITMAPINFOHEADER *pbmi = HEADER(pVideoInfo);
-	UNUSED_ALWAYS(pbmi);
+	UNREFERENCED_PARAMETER(pbmi);
     SetRectEmpty(&pVideoInfo->rcSource);
     SetRectEmpty(&pVideoInfo->rcTarget);
 
@@ -2682,7 +2684,7 @@ STDAPI ConvertVideoInfoToVideoInfo2(__inout AM_MEDIA_TYPE *pmt)
         return E_INVALIDARG;
     }
 	VIDEOINFO *pVideoInfo = (VIDEOINFO *)pmt->pbFormat;
-	UNUSED_ALWAYS(pVideoInfo);
+	UNREFERENCED_PARAMETER(pVideoInfo);
     DWORD dwNewSize;
     HRESULT hr = DWordAdd(pmt->cbFormat, sizeof(VIDEOINFOHEADER2) - sizeof(VIDEOINFOHEADER), &dwNewSize);
     if (FAILED(hr)) {

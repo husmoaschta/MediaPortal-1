@@ -7,7 +7,7 @@
 //------------------------------------------------------------------------------
 
 
-#include <streams.h>
+#include "streams.h"
 #include <strsafe.h>
 
 //---------------------------------------------------------------------------
@@ -116,7 +116,7 @@ AMovieSetupRegisterServer( CLSID   clsServer
 {
   // temp buffer
   //
-  TCHAR achTemp[_MAX_PATH];
+  TCHAR achTemp[MAX_PATH];
 
   // convert CLSID uuid to string and write
   // out subkey as string - CLSID\{}
@@ -126,6 +126,7 @@ AMovieSetupRegisterServer( CLSID   clsServer
                               , szCLSID
                               , CHARS_IN_GUID );
   ASSERT( SUCCEEDED(hr) );
+  UNREFERENCED_PARAMETER(hr);
 
   // create key
   //
@@ -376,12 +377,12 @@ AMovieDllRegisterServer2( BOOL bRegister )
   // get file name (where g_hInst is the
   // instance handle of the filter dll)
   //
-  WCHAR achFileName[_MAX_PATH];
+  WCHAR achFileName[MAX_PATH];
 
   // WIN95 doesn't support GetModuleFileNameW
   //
   {
-    char achTemp[_MAX_PATH];
+    char achTemp[MAX_PATH];
 
     DbgLog((LOG_TRACE, 2, TEXT("- get module file name")));
 
@@ -538,12 +539,12 @@ AMovieDllRegisterServer( void )
   // get file name (where g_hInst is the
   // instance handle of the filter dll)
   //
-  WCHAR achFileName[_MAX_PATH];
+  WCHAR achFileName[MAX_PATH];
 
   {
     // WIN95 doesn't support GetModuleFileNameW
     //
-    char achTemp[_MAX_PATH];
+    char achTemp[MAX_PATH];
 
     if( 0 == GetModuleFileNameA( g_hInst
                               , achTemp

@@ -1,5 +1,5 @@
 /*
- * (C) 2006-2012 see Authors.txt
+ * (C) 2009-2012 see Authors.txt
  *
  * This file is part of MPC-HC.
  *
@@ -30,10 +30,11 @@ class CGolombBuffer;
 class CDVBSub : public CBaseSub
 {
 public:
-    CDVBSub(void);
-    ~CDVBSub(void);
+    CDVBSub();
+    ~CDVBSub();
 
     virtual HRESULT        ParseSample(IMediaSample* pSample);
+    virtual void           EndOfStream();
     virtual void           Render(SubPicDesc& spd, REFERENCE_TIME rt, RECT& bbox);
     virtual HRESULT        GetTextureSize(POSITION pos, SIZE& MaxTextureSize, SIZE& VideoSize, POINT& VideoTopLeft);
     virtual POSITION       GetStartPosition(REFERENCE_TIME rt, double fps);
@@ -63,18 +64,23 @@ public:
     enum DVB_PAGE_STATE {
         DPS_NORMAL      = 0x00,
         DPS_ACQUISITION = 0x01,
-        DPS_MODE        = 0x02,
+        DPS_MODE_CHANGE = 0x02,
         DPS_RESERVED    = 0x03
     };
 
     struct DVB_CLUT {
-        BYTE         id;
-        BYTE         version_number;
-        BYTE         size;
+        BYTE    id;
+        BYTE    version_number;
+        BYTE    size;
 
         HDMV_PALETTE palette[256];
 
-        DVB_CLUT() { memset(palette, 0, sizeof(palette)); }
+        DVB_CLUT() {
+            id = 0;
+            version_number = 0;
+            size = 0;
+            memset(palette, 0, sizeof(palette));
+        }
     };
 
     struct DVB_DISPLAY {
@@ -146,6 +152,7 @@ public:
             _8_bit_pixel_code      = 0;
             _4_bit_pixel_code      = 0;
             _2_bit_pixel_code      = 0;
+            objectCount            = 0;
         }
     };
 
@@ -211,6 +218,6 @@ private:
     HRESULT             ParseClut(CGolombBuffer& gb, WORD wSegLength);
     HRESULT             ParseObject(CGolombBuffer& gb, WORD wSegLength);
 
+    HRESULT             EnqueuePage(REFERENCE_TIME rtStop);
     HRESULT             UpdateTimeStamp(REFERENCE_TIME rtStop);
-
 };

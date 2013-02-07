@@ -1,6 +1,6 @@
 /*
  * (C) 2003-2006 Gabest
- * (C) 2006-2012 see Authors.txt
+ * (C) 2006-2013 see Authors.txt
  *
  * This file is part of MPC-HC.
  *
@@ -195,7 +195,7 @@ bool CWord::CreateOpaqueBox()
                m_width + w, m_ascent + m_descent + h,
                -w, m_ascent + m_descent + h);
 
-    m_pOpaqueBox = DNew CPolygon(style, str, 0, 0, 0, 1.0 / 8, 1.0 / 8, 0);
+    m_pOpaqueBox = DEBUG_NEW CPolygon(style, str, 0, 0, 0, 1.0 / 8, 1.0 / 8, 0);
 
     return !!m_pOpaqueBox;
 }
@@ -445,7 +445,7 @@ CText::CText(STSStyle& style, CStringW str, int ktype, int kstart, int kend, dou
 
 CWord* CText::Copy()
 {
-    return DNew CText(*this);
+    return DEBUG_NEW CText(*this);
 }
 
 bool CText::Append(CWord* w)
@@ -522,7 +522,7 @@ CPolygon::~CPolygon()
 
 CWord* CPolygon::Copy()
 {
-    return (DNew CPolygon(*this));
+    return (DEBUG_NEW CPolygon(*this));
 }
 
 bool CPolygon::Append(CWord* w)
@@ -707,11 +707,14 @@ bool CPolygon::CreatePath()
 
     if (mPathPoints != len) {
         BYTE* pNewPathTypes = (BYTE*)realloc(mpPathTypes, len * sizeof(BYTE));
-        POINT* pNewPathPoints = (POINT*)realloc(mpPathPoints, len * sizeof(POINT));
-        if (!pNewPathTypes || !pNewPathPoints) {
+        if (!pNewPathTypes) {
             return false;
         }
         mpPathTypes = pNewPathTypes;
+        POINT* pNewPathPoints = (POINT*)realloc(mpPathPoints, len * sizeof(POINT));
+        if (!pNewPathPoints) {
+            return false;
+        }
         mpPathPoints = pNewPathPoints;
         mPathPoints = len;
     }
@@ -734,7 +737,7 @@ CClipper::CClipper(CStringW str, CSize size, double scalex, double scaley, bool 
         return;
     }
 
-    m_pAlphaMask = DNew BYTE[size.cx * size.cy];
+    m_pAlphaMask = DEBUG_NEW BYTE[size.cx * size.cy];
     if (!m_pAlphaMask) {
         return;
     }
@@ -800,7 +803,7 @@ CClipper::~CClipper()
 
 CWord* CClipper::Copy()
 {
-    return DNew CClipper(m_str, m_size, m_scalex, m_scaley, m_inverse, m_cpOffset);
+    return DEBUG_NEW CClipper(m_str, m_size, m_scalex, m_scaley, m_inverse, m_cpOffset);
 }
 
 bool CClipper::Append(CWord* w)
@@ -1114,7 +1117,6 @@ int CSubtitle::GetWrapWidth(POSITION pos, int maxwidth)
 {
     if (m_wrapStyle == 0 || m_wrapStyle == 3) {
         if (maxwidth > 0) {
-            //          int fullwidth = GetFullWidth();
             int fullwidth = GetFullLineWidth(pos);
 
             int minwidth = fullwidth / ((abs(fullwidth) / maxwidth) + 1);
@@ -1129,11 +1131,10 @@ int CSubtitle::GetWrapWidth(POSITION pos, int maxwidth)
                 }
             }
 
-            maxwidth = width;
-
-            if (m_wrapStyle == 3 && pos) {
-                maxwidth -= wordwidth;
+            if (m_wrapStyle == 3 && width < fullwidth && fullwidth - width + wordwidth < maxwidth) {
+                width -= wordwidth;
             }
+            maxwidth = width;
         }
     } else if (m_wrapStyle == 1) {
         //      maxwidth = maxwidth;
@@ -1150,7 +1151,7 @@ CLine* CSubtitle::GetNextLine(POSITION& pos, int maxwidth)
         return NULL;
     }
 
-    CLine* ret = DNew CLine();
+    CLine* ret = DEBUG_NEW CLine();
     if (!ret) {
         return NULL;
     }
@@ -1244,7 +1245,7 @@ void CSubtitle::CreateClippers(CSize size)
         if (!m_pClipper) {
             CStringW str;
             str.Format(L"m %d %d l %d %d %d %d %d %d", 0, 0, w, 0, w, h, 0, h);
-            m_pClipper = DNew CClipper(str, size, 1, 1, false, CPoint(0, 0));
+            m_pClipper = DEBUG_NEW CClipper(str, size, 1, 1, false, CPoint(0, 0));
             if (!m_pClipper) {
                 return;
             }
@@ -1281,7 +1282,7 @@ void CSubtitle::CreateClippers(CSize size)
         if (!m_pClipper) {
             CStringW str;
             str.Format(L"m %d %d l %d %d %d %d %d %d", 0, 0, w, 0, w, h, 0, h);
-            m_pClipper = DNew CClipper(str, size, 1, 1, false, CPoint(0, 0));
+            m_pClipper = DEBUG_NEW CClipper(str, size, 1, 1, false, CPoint(0, 0));
             if (!m_pClipper) {
                 return;
             }
@@ -1576,7 +1577,7 @@ void CRenderedTextSubtitle::ParseEffect(CSubtitle* sub, CString str)
             return;
         }
 
-        Effect* e = DNew Effect;
+        Effect* e = DEBUG_NEW Effect;
         if (!e) {
             return;
         }
@@ -1599,7 +1600,7 @@ void CRenderedTextSubtitle::ParseEffect(CSubtitle* sub, CString str)
             bottom = tmp;
         }
 
-        Effect* e = DNew Effect;
+        Effect* e = DEBUG_NEW Effect;
         if (!e) {
             return;
         }
@@ -1630,20 +1631,20 @@ void CRenderedTextSubtitle::ParseString(CSubtitle* sub, CStringW str, STSStyle& 
             continue;
         }
 
-                if (i < j) {
-            if (CWord* w = DNew CText(style, str.Mid(i, j - i), m_ktype, m_kstart, m_kend, sub->m_scalex, sub->m_scaley)) {
+        if (i < j) {
+            if (CWord* w = DEBUG_NEW CText(style, str.Mid(i, j - i), m_ktype, m_kstart, m_kend, sub->m_scalex, sub->m_scaley)) {
                 sub->m_words.AddTail(w);
                 m_kstart = m_kend;
             }
         }
 
         if (c == L'\n') {
-            if (CWord* w = DNew CText(style, CStringW(), m_ktype, m_kstart, m_kend, sub->m_scalex, sub->m_scaley)) {
+            if (CWord* w = DEBUG_NEW CText(style, CStringW(), m_ktype, m_kstart, m_kend, sub->m_scalex, sub->m_scaley)) {
                 sub->m_words.AddTail(w);
                 m_kstart = m_kend;
             }
         } else if (c == L' ' || c == L'\x00A0') {
-            if (CWord* w = DNew CText(style, CStringW(c), m_ktype, m_kstart, m_kend, sub->m_scalex, sub->m_scaley)) {
+            if (CWord* w = DEBUG_NEW CText(style, CStringW(c), m_ktype, m_kstart, m_kend, sub->m_scalex, sub->m_scaley)) {
                 sub->m_words.AddTail(w);
                 m_kstart = m_kend;
             }
@@ -1661,7 +1662,7 @@ void CRenderedTextSubtitle::ParsePolygon(CSubtitle* sub, CStringW str, STSStyle&
         return;
     }
 
-    if (CWord* w = DNew CPolygon(style, str, m_ktype, m_kstart, m_kend, sub->m_scalex / (1 << (m_nPolygon - 1)), sub->m_scaley / (1 << (m_nPolygon - 1)), m_polygonBaselineOffset)) {
+    if (CWord* w = DEBUG_NEW CPolygon(style, str, m_ktype, m_kstart, m_kend, sub->m_scalex / (1 << (m_nPolygon - 1)), sub->m_scaley / (1 << (m_nPolygon - 1)), m_polygonBaselineOffset)) {
         sub->m_words.AddTail(w);
         m_kstart = m_kend;
     }
@@ -1875,13 +1876,13 @@ bool CRenderedTextSubtitle::ParseSSATag(CSubtitle* sub, CStringW str, STSStyle& 
             bool invert = (cmd == L"iclip");
 
             if (params.GetCount() == 1 && !sub->m_pClipper) {
-                sub->m_pClipper = DNew CClipper(params[0], CSize(m_size.cx >> 3, m_size.cy >> 3), sub->m_scalex, sub->m_scaley, invert, (sub->m_relativeTo == 1) ? CPoint(m_vidrect.left, m_vidrect.top) : CPoint(0, 0));
+                sub->m_pClipper = DEBUG_NEW CClipper(params[0], CSize(m_size.cx >> 3, m_size.cy >> 3), sub->m_scalex, sub->m_scaley, invert, (sub->m_relativeTo == 1) ? CPoint(m_vidrect.left, m_vidrect.top) : CPoint(0, 0));
             } else if (params.GetCount() == 2 && !sub->m_pClipper) {
                 long scale = wcstol(p, NULL, 10);
                 if (scale < 1) {
                     scale = 1;
                 }
-                sub->m_pClipper = DNew CClipper(params[1], CSize(m_size.cx >> 3, m_size.cy >> 3), sub->m_scalex / (1 << (scale - 1)), sub->m_scaley / (1 << (scale - 1)), invert, (sub->m_relativeTo == 1) ? CPoint(m_vidrect.left, m_vidrect.top) : CPoint(0, 0));
+                sub->m_pClipper = DEBUG_NEW CClipper(params[1], CSize(m_size.cx >> 3, m_size.cy >> 3), sub->m_scalex / (1 << (scale - 1)), sub->m_scaley / (1 << (scale - 1)), invert, (sub->m_relativeTo == 1) ? CPoint(m_vidrect.left, m_vidrect.top) : CPoint(0, 0));
             } else if (params.GetCount() == 4) {
                 CRect r;
 
@@ -1918,7 +1919,7 @@ bool CRenderedTextSubtitle::ParseSSATag(CSubtitle* sub, CStringW str, STSStyle& 
                               : org.colors[0];
         } else if (cmd == L"fade" || cmd == L"fad") {
             if (params.GetCount() == 7 && !sub->m_effects[EF_FADE]) { // {\fade(a1=param[0], a2=param[1], a3=param[2], t1=t[0], t2=t[1], t3=t[2], t4=t[3])
-                if (Effect* e = DNew Effect) {
+                if (Effect* e = DEBUG_NEW Effect) {
                     for (ptrdiff_t k = 0; k < 3; k++) {
                         e->param[k] = wcstol(params[k], NULL, 10);
                     }
@@ -1929,7 +1930,7 @@ bool CRenderedTextSubtitle::ParseSSATag(CSubtitle* sub, CStringW str, STSStyle& 
                     sub->m_effects[EF_FADE] = e;
                 }
             } else if (params.GetCount() == 2 && !sub->m_effects[EF_FADE]) { // {\fad(t1=t[1], t2=t[2])
-                if (Effect* e = DNew Effect) {
+                if (Effect* e = DEBUG_NEW Effect) {
                     e->param[0] = e->param[2] = 0xff;
                     e->param[1] = 0x00;
                     for (ptrdiff_t k = 1; k < 3; k++) {
@@ -2028,7 +2029,7 @@ bool CRenderedTextSubtitle::ParseSSATag(CSubtitle* sub, CStringW str, STSStyle& 
                       : 1000;
         } else if (cmd == L"move") { // {\move(x1=param[0], y1=param[1], x2=param[2], y2=param[3][, t1=t[0], t2=t[1]])}
             if ((params.GetCount() == 4 || params.GetCount() == 6) && !sub->m_effects[EF_MOVE]) {
-                if (Effect* e = DNew Effect) {
+                if (Effect* e = DEBUG_NEW Effect) {
                     e->param[0] = (int)(sub->m_scalex * wcstod(params[0], NULL) * 8);
                     e->param[1] = (int)(sub->m_scaley * wcstod(params[1], NULL) * 8);
                     e->param[2] = (int)(sub->m_scalex * wcstod(params[2], NULL) * 8);
@@ -2047,7 +2048,7 @@ bool CRenderedTextSubtitle::ParseSSATag(CSubtitle* sub, CStringW str, STSStyle& 
         } else if (cmd == L"org") { // {\org(x=param[0], y=param[1])}
             size_t uNumParams = params.GetCount();
             if (uNumParams == 2 && !sub->m_effects[EF_ORG]) {
-                if (Effect* e = DNew Effect) {
+                if (Effect* e = DEBUG_NEW Effect) {
                     e->param[0] = (int)(sub->m_scalex * wcstod(params[0], NULL) * 8.0);
                     e->param[1] = (int)(sub->m_scaley * wcstod(params[1], NULL) * 8.0);
 
@@ -2063,7 +2064,7 @@ bool CRenderedTextSubtitle::ParseSSATag(CSubtitle* sub, CStringW str, STSStyle& 
             m_polygonBaselineOffset = wcstol(p, NULL, 10);
         } else if (cmd == L"pos") {
             if (params.GetCount() == 2 && !sub->m_effects[EF_MOVE]) {
-                if (Effect* e = DNew Effect) {
+                if (Effect* e = DEBUG_NEW Effect) {
                     e->param[0] = e->param[2] = (int)(sub->m_scalex * wcstod(params[0], NULL) * 8);
                     e->param[1] = e->param[3] = (int)(sub->m_scaley * wcstod(params[1], NULL) * 8);
                     e->t[0] = e->t[1] = 0;
@@ -2294,7 +2295,7 @@ CSubtitle* CRenderedTextSubtitle::GetSubtitle(int entry)
         }
     }
 
-    sub = DNew CSubtitle();
+    sub = DEBUG_NEW CSubtitle();
     if (!sub) {
         return NULL;
     }

@@ -1,5 +1,5 @@
 /*
- * (C) 2006-2012 see Authors.txt
+ * (C) 2008-2012 see Authors.txt
  *
  * This file is part of MPC-HC.
  *
@@ -56,7 +56,7 @@ private:
     bool   MoveToNextAnnexBStartcode();
     bool   MoveToNextRTPStartcode();
 
-public :
+public:
     CH264Nalu() :
         forbidden_bit(0),
         nal_reference_idc(0),

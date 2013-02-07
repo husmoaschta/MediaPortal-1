@@ -1,5 +1,5 @@
 /*
- * (C) 2006-2012 see Authors.txt
+ * (C) 2009-2012 see Authors.txt
  *
  * This file is part of MPC-HC.
  *
@@ -37,6 +37,7 @@ public:
     virtual ~CBaseSub();
 
     virtual HRESULT         ParseSample(IMediaSample* pSample) = NULL;
+    virtual void            EndOfStream() { /* Nothing to do */ };
     virtual void            Reset() = NULL;
     virtual POSITION        GetStartPosition(REFERENCE_TIME rt, double fps) = NULL;
     virtual POSITION        GetNext(POSITION pos) = NULL;

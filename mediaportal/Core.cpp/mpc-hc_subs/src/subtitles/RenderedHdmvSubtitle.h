@@ -1,5 +1,5 @@
 /*
- * (C) 2006-2012 see Authors.txt
+ * (C) 2008-2012 see Authors.txt
  *
  * This file is part of MPC-HC.
  *
@@ -31,7 +31,7 @@ class __declspec(uuid("FCA68599-C83E-4ea5-94A3-C2E1B0E326B9"))
 {
 public:
     CRenderedHdmvSubtitle(CCritSec* pLock, SUBTITLE_TYPE nType, const CString& name, LCID lcid);
-    ~CRenderedHdmvSubtitle(void);
+    ~CRenderedHdmvSubtitle();
 
     DECLARE_IUNKNOWN
     STDMETHODIMP NonDelegatingQueryInterface(REFIID riid, void** ppv);
@@ -57,6 +57,7 @@ public:
 
     HRESULT ParseSample(IMediaSample* pSample);
     HRESULT NewSegment(REFERENCE_TIME tStart, REFERENCE_TIME tStop, double dRate);
+    void EndOfStream();
 
 private:
     CString         m_name;

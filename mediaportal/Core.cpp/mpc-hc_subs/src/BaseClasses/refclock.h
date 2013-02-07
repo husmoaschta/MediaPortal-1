@@ -10,9 +10,6 @@
 #ifndef __BASEREFCLOCK__
 #define __BASEREFCLOCK__
 
-/*
-#include <Schedule.h>
-*/
 #include "Schedule.h"
 
 const UINT RESOLUTION = 1;                      /* High resolution timer */

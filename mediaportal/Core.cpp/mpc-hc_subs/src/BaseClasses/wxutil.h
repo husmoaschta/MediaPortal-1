@@ -33,7 +33,6 @@ public:
     CCritSec();
     ~CCritSec();
     void Lock();
-    bool TryLock();
     void Unlock();
 #else
 
@@ -48,11 +47,6 @@ public:
 
     void Lock() {
         EnterCriticalSection(&m_CritSec);
-    };
-
-    bool TryLock() 
-	{
-        return TryEnterCriticalSection(&m_CritSec) != 0;
     };
 
     void Unlock() {
@@ -190,7 +184,7 @@ public:
 
     // thread initially runs this. param is actually 'this'. function
     // just gets this and calls ThreadProc
-    static DWORD WINAPI InitialThreadProc(__inout LPVOID pv);
+    static unsigned int WINAPI InitialThreadProc(__inout LPVOID pv); // MPC-HC patch
 
     // start thread running  - error if already running
     BOOL Create();

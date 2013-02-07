@@ -96,7 +96,7 @@ public:
     STDMETHODIMP GetAspectRatioMode(DWORD* pdwAspectRatioMode) { return E_NOTIMPL; };
     STDMETHODIMP SetVideoWindow(HWND hwndVideo) { return E_NOTIMPL; };
     STDMETHODIMP GetVideoWindow(HWND* phwndVideo);
-    STDMETHODIMP RepaintVideo(void) { return E_NOTIMPL; };
+    STDMETHODIMP RepaintVideo() { return E_NOTIMPL; };
     STDMETHODIMP GetCurrentImage(BITMAPINFOHEADER* pBih, BYTE** pDib,
                                  DWORD* pcbDib, LONGLONG* pTimeStamp) { return E_NOTIMPL; };
     STDMETHODIMP SetBorderColor(COLORREF Clr) { return E_NOTIMPL; };
@@ -267,7 +267,7 @@ CNullUVideoRenderer::CNullUVideoRenderer(LPUNKNOWN pUnk, HRESULT* phr)
     : CNullRenderer(__uuidof(this), NAME("Null Video Renderer (Uncompressed)"), pUnk, phr)
 {
 #ifdef USE_DXVA
-    m_pInputPin = DNew CNullVideoRendererInputPin(this, phr, L"In");
+    m_pInputPin = DEBUG_NEW CNullVideoRendererInputPin(this, phr, L"In");
 #endif
 }
 
@@ -308,8 +308,9 @@ HRESULT CNullUVideoRenderer::DoRenderSample(IMediaSample* pSample)
     CComQIPtr<IMFGetService> pService = pSample;
     if (pService != NULL) {
         CComPtr<IDirect3DSurface9>  pSurface;
-        pService->GetService(MR_BUFFER_SERVICE, __uuidof(IDirect3DSurface9), (void**)&pSurface);
-        // TODO : render surface...
+        if (SUCCEEDED(pService->GetService(MR_BUFFER_SERVICE, __uuidof(IDirect3DSurface9), (void**)&pSurface))) {
+            // TODO : render surface...
+        }
     }
 #endif
 
@@ -381,5 +382,5 @@ HRESULT CNullTextRenderer::CTextInputPin::CheckMediaType(const CMediaType* pmt)
 CNullTextRenderer::CNullTextRenderer(LPUNKNOWN pUnk, HRESULT* phr)
     : CBaseFilter(NAME("CNullTextRenderer"), pUnk, this, __uuidof(this), phr)
 {
-    m_pInput.Attach(DNew CTextInputPin(this, this, phr));
+    m_pInput.Attach(DEBUG_NEW CTextInputPin(this, this, phr));
 }

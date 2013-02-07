@@ -194,6 +194,7 @@
     <ClInclude Include="..\h\VD2\system\cpuaccel.h" />
     <ClInclude Include="..\h\vd2\system\Error.h" />
     <ClInclude Include="..\h\VD2\system\memory.h" />
+    <ClInclude Include="..\h\vd2\system\seh.h" />
     <ClInclude Include="..\h\vd2\system\thread.h" />
     <ClInclude Include="..\h\VD2\system\vdtypes.h" />
     <ClInclude Include="h\stdafx.h" />

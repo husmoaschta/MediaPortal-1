@@ -8,10 +8,8 @@
 //------------------------------------------------------------------------------
 
 
-#include <streams.h>
+#include "streams.h"
 #include "pullpin.h"
-
-#define UNUSED_ALWAYS(x) x
 
 #ifdef DXMPERF
 #include "dxmperf.h"
@@ -304,7 +302,7 @@ CPullPin::StopThread()
 DWORD
 CPullPin::ThreadProc(void)
 {
-    while(1) {
+    for (;;) {
 	DWORD cmd = GetRequest();
 	switch(cmd) {
 	case TM_Exit:
@@ -572,7 +570,7 @@ CPullPin::Process(void)
 void
 CPullPin::CleanupCancelled(void)
 {
-    while (1) {
+    for (;;) {
 	IMediaSample * pSample;
 	DWORD_PTR dwUnused;
 
@@ -580,7 +578,7 @@ CPullPin::CleanupCancelled(void)
 			    0,          // no wait
 			    &pSample,
 			    &dwUnused);
-	UNUSED_ALWAYS(hr);
+	UNREFERENCED_PARAMETER(hr);
 	if(pSample) {
 	    pSample->Release();
 	} else {

@@ -1,6 +1,6 @@
 /*
  * (C) 2003-2006 Gabest
- * (C) 2006-2012 see Authors.txt
+ * (C) 2006-2013 see Authors.txt
  *
  * This file is part of MPC-HC.
  *
@@ -70,7 +70,7 @@ HRESULT CSubtitleInputPin::CheckMediaType(const CMediaType* pmt)
 HRESULT CSubtitleInputPin::CompleteConnect(IPin* pReceivePin)
 {
     if (m_mt.majortype == MEDIATYPE_Text) {
-        if (!(m_pSubStream = DNew CRenderedTextSubtitle(m_pSubLock))) {
+        if (!(m_pSubStream = DEBUG_NEW CRenderedTextSubtitle(m_pSubLock))) {
             return E_FAIL;
         }
         CRenderedTextSubtitle* pRTS = (CRenderedTextSubtitle*)(ISubStream*)m_pSubStream;
@@ -89,8 +89,16 @@ HRESULT CSubtitleInputPin::CompleteConnect(IPin* pReceivePin)
             name = ISO6392ToLanguage(psi->IsoLang);
             lcid = ISO6392ToLcid(psi->IsoLang);
 
-            if (wcslen(psi->TrackName) > 0) {
-                name += (!name.IsEmpty() ? _T(", ") : _T("")) + CString(psi->TrackName);
+            CString trackName(psi->TrackName);
+            trackName.Trim();
+            if (!trackName.IsEmpty()) {
+                if (!name.IsEmpty()) {
+                    if (trackName[0] != _T('(') && trackName[0] != _T('[')) {
+                        name += _T(",");
+                    }
+                    name += _T(" ");
+                }
+                name += trackName;
             }
             if (name.IsEmpty()) {
                 name = _T("Unknown");
@@ -105,7 +113,7 @@ HRESULT CSubtitleInputPin::CompleteConnect(IPin* pReceivePin)
                 || m_mt.subtype == MEDIASUBTYPE_SSA
                 || m_mt.subtype == MEDIASUBTYPE_ASS
                 || m_mt.subtype == MEDIASUBTYPE_ASS2) {
-            if (!(m_pSubStream = DNew CRenderedTextSubtitle(m_pSubLock))) {
+            if (!(m_pSubStream = DEBUG_NEW CRenderedTextSubtitle(m_pSubLock))) {
                 return E_FAIL;
             }
             CRenderedTextSubtitle* pRTS = (CRenderedTextSubtitle*)(ISubStream*)m_pSubStream;
@@ -128,13 +136,13 @@ HRESULT CSubtitleInputPin::CompleteConnect(IPin* pReceivePin)
                 pRTS->Open(mt.pbFormat + dwOffset, mt.cbFormat - dwOffset, DEFAULT_CHARSET, pRTS->m_name);
             }
         } else if (m_mt.subtype == MEDIASUBTYPE_VOBSUB) {
-            if (!(m_pSubStream = DNew CVobSubStream(m_pSubLock))) {
+            if (!(m_pSubStream = DEBUG_NEW CVobSubStream(m_pSubLock))) {
                 return E_FAIL;
             }
             CVobSubStream* pVSS = (CVobSubStream*)(ISubStream*)m_pSubStream;
             pVSS->Open(name, m_mt.pbFormat + dwOffset, m_mt.cbFormat - dwOffset);
         } else if (IsHdmvSub(&m_mt)) {
-            if (!(m_pSubStream = DNew CRenderedHdmvSubtitle(m_pSubLock, (m_mt.subtype == MEDIASUBTYPE_DVB_SUBTITLES) ? ST_DVB : ST_HDMV, name, lcid))) {
+            if (!(m_pSubStream = DEBUG_NEW CRenderedHdmvSubtitle(m_pSubLock, (m_mt.subtype == MEDIASUBTYPE_DVB_SUBTITLES) ? ST_DVB : ST_HDMV, name, lcid))) {
                 return E_FAIL;
             }
         }
@@ -334,7 +342,6 @@ STDMETHODIMP CSubtitleInputPin::Receive(IMediaSample* pSample)
             CVobSubStream* pVSS = (CVobSubStream*)(ISubStream*)m_pSubStream;
             pVSS->Add(tStart, tStop, pData, len);
         } else if (IsHdmvSub(&m_mt)) {
-            CAutoLock cAutoLock3(m_pSubLock);
             CRenderedHdmvSubtitle* pHdmvSubtitle = (CRenderedHdmvSubtitle*)(ISubStream*)m_pSubStream;
             pHdmvSubtitle->ParseSample(pSample);
         }
@@ -347,6 +354,19 @@ STDMETHODIMP CSubtitleInputPin::Receive(IMediaSample* pSample)
     }
 
     hr = S_OK;
+
+    return hr;
+}
+
+STDMETHODIMP CSubtitleInputPin::EndOfStream(void)
+{
+    HRESULT hr = __super::EndOfStream();
+
+    if (SUCCEEDED(hr) && IsHdmvSub(&m_mt)) {
+        CAutoLock cAutoLock(m_pSubLock);
+        CRenderedHdmvSubtitle* pHdmvSubtitle = (CRenderedHdmvSubtitle*)(ISubStream*)m_pSubStream;
+        pHdmvSubtitle->EndOfStream();
+    }
 
     return hr;
 }

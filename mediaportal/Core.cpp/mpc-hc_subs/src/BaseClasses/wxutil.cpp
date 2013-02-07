@@ -8,9 +8,10 @@
 //------------------------------------------------------------------------------
 
 
-#include <streams.h>
+#include "streams.h"
 #define STRSAFE_NO_DEPRECATE
 #include <strsafe.h>
+#include <process.h> //MPC-HC patch
 
 
 // --- CAMEvent -----------------------
@@ -110,7 +111,7 @@ CAMThread::~CAMThread() {
 
 // when the thread starts, it calls this function. We unwrap the 'this'
 //pointer and call ThreadProc.
-DWORD WINAPI
+unsigned int WINAPI //MPC-HC patch
 CAMThread::InitialThreadProc(__inout LPVOID pv)
 {
     HRESULT hrCoInit = CAMThread::CoInitializeHelper();
@@ -132,21 +133,20 @@ CAMThread::InitialThreadProc(__inout LPVOID pv)
 BOOL
 CAMThread::Create()
 {
-    DWORD threadid;
-
     CAutoLock lock(&m_AccessLock);
 
     if (ThreadExists()) {
 	return FALSE;
     }
 
-    m_hThread = CreateThread(
-		    NULL,
-		    0,
-		    CAMThread::InitialThreadProc,
-		    this,
-		    0,
-		    &threadid);
+    //MPC-HC patch
+    m_hThread = (HANDLE)_beginthreadex( NULL,                         /* Security */
+                                        0,                            /* Stack Size */
+                                        CAMThread::InitialThreadProc, /* Thread process */
+                                        (LPVOID)this,                 /* Arguments */
+                                        0,                            /* 0 = Start Immediately */
+                                        NULL                          /* Thread Address */
+                                        );
 
     if (!m_hThread) {
 	return FALSE;
@@ -334,7 +334,7 @@ CMsgThread::GetThreadMsg(__out CMsg *msg)
     CMsg * pmsg = NULL;
 
     // keep trying until a message appears
-    while (TRUE) {
+    for (;;) {
         {
             CAutoLock lck(&m_Lock);
             pmsg = m_ThreadQueue.RemoveHead();
@@ -344,7 +344,7 @@ CMsgThread::GetThreadMsg(__out CMsg *msg)
                 break;
             }
         }
-        // the semaphore will be signalled when it is non-empty
+        // the semaphore will be signaled when it is non-empty
         WaitForSingleObject(m_hSem, INFINITE);
     }
     // copy fields to caller's CMsg
@@ -508,25 +508,6 @@ void CCritSec::Lock()
     }
 }
 
-bool CCritSec::TryLock()
-{
-    UINT tracelevel=3;
-    DWORD us = GetCurrentThreadId();
-    BOOL bSuccess = TryEnterCriticalSection(&m_CritSec);
-	if (bSuccess)
-	{
-		if (0 == m_lockCount++) {
-			// we now own it for the first time.  Set owner information
-			m_currentOwner = us;
-
-			if (m_fTrace) {
-				DbgLog((LOG_LOCKING, tracelevel, TEXT("Thread %d now owns lock %x"), m_currentOwner, &m_CritSec));
-			}
-		}
-	}
-	return bSuccess != 0;
-}
-
 void CCritSec::Unlock() {
     if (0 == --m_lockCount) {
         // about to be unowned
@@ -619,8 +600,8 @@ DWORD WINAPI WaitDispatchingMessages(
 {
     BOOL bPeeked = FALSE;
     DWORD dwResult;
-    DWORD dwStart;
-    DWORD dwThreadPriority;
+    DWORD dwStart = 0;
+    DWORD dwThreadPriority = THREAD_PRIORITY_NORMAL;
 
     static UINT uMsgId = 0;
 

@@ -29,7 +29,7 @@
 #endif
 
 
-CHdmvSub::CHdmvSub(void)
+CHdmvSub::CHdmvSub()
     : CBaseSub(ST_HDMV)
     , m_nCurSegment(NO_SEGMENT)
     , m_pSegBuffer(NULL)
@@ -53,7 +53,7 @@ void CHdmvSub::AllocSegment(int nSize)
 {
     if (nSize > m_nTotalSegBuffer) {
         delete [] m_pSegBuffer;
-        m_pSegBuffer = DNew BYTE[nSize];
+        m_pSegBuffer = DEBUG_NEW BYTE[nSize];
         m_nTotalSegBuffer = nSize;
     }
     m_nSegBufferPos = 0;
@@ -174,7 +174,7 @@ HRESULT CHdmvSub::ParseSample(IMediaSample* pSample)
 
 int CHdmvSub::ParsePresentationSegment(REFERENCE_TIME rt, CGolombBuffer* pGBuffer)
 {
-    m_pCurrentPresentationSegment = new HDMV_PRESENTATION_SEGMENT();
+    m_pCurrentPresentationSegment = DEBUG_NEW HDMV_PRESENTATION_SEGMENT();
 
     m_pCurrentPresentationSegment->rtStart = rt;
     m_pCurrentPresentationSegment->rtStop  = _I64_MAX;
@@ -189,7 +189,7 @@ int CHdmvSub::ParsePresentationSegment(REFERENCE_TIME rt, CGolombBuffer* pGBuffe
                   m_pCurrentPresentationSegment->composition_descriptor.bState, m_pCurrentPresentationSegment->objectCount);
 
     for (int i = 0; i < m_pCurrentPresentationSegment->objectCount; i++) {
-        CompositionObject* pCompositionObject = new CompositionObject();
+        CompositionObject* pCompositionObject = DEBUG_NEW CompositionObject();
         ParseCompositionObject(pGBuffer, pCompositionObject);
         m_pCurrentPresentationSegment->objects.AddTail(pCompositionObject);
     }
@@ -238,7 +238,7 @@ void CHdmvSub::ParsePalette(CGolombBuffer* pGBuffer, unsigned short nSize)  // #
     CLUT.version_number = pGBuffer->ReadByte();
 
     ASSERT((nSize - 2) % sizeof(HDMV_PALETTE) == 0);
-    CLUT.size = (nSize - 2) / sizeof(HDMV_PALETTE);
+    CLUT.size = BYTE((nSize - 2) / sizeof(HDMV_PALETTE));
 
     for (int i = 0; i < CLUT.size; i++) {
         BYTE entry_id = pGBuffer->ReadByte();

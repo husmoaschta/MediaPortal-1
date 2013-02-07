@@ -1,6 +1,6 @@
 /*
  * (C) 2003-2006 Gabest
- * (C) 2006-2012 see Authors.txt
+ * (C) 2006-2013 see Authors.txt
  *
  * This file is part of MPC-HC.
  *
@@ -263,6 +263,8 @@ public:
 #define SAFE_DELETE_ARRAY(p) { if (p) { delete [] (p);  (p) = NULL; } }
 #define SAFE_RELEASE(p)      { if (p) { (p)->Release(); (p) = NULL; } }
 
+#define ResStr(id)  CString(MAKEINTRESOURCE(id))
+
 template <typename T> __inline void INITDDSTRUCT(T& dd)
 {
     ZeroMemory(&dd, sizeof(dd));
@@ -273,14 +275,14 @@ template <class T>
 static CUnknown* WINAPI CreateInstance(LPUNKNOWN lpunk, HRESULT* phr)
 {
     *phr = S_OK;
-    CUnknown* punk = DNew T(lpunk, phr);
+    CUnknown* punk = DEBUG_NEW T(lpunk, phr);
     if (punk == NULL) {
         *phr = E_OUTOFMEMORY;
     }
     return punk;
 }
 
-inline int LNKO(int a, int b)
+inline int GCD(int a, int b)
 {
     if (a == 0 || b == 0) {
         return 1;

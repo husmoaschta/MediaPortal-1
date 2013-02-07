@@ -1,6 +1,6 @@
 /*
  * (C) 2003-2006 Gabest
- * (C) 2006-2012 see Authors.txt
+ * (C) 2006-2013 see Authors.txt
  *
  * This file is part of MPC-HC.
  *
@@ -29,7 +29,7 @@
 struct SubPicDesc {
     int type;
     int w, h, bpp, pitch, pitchUV;
-    void* bits;
+    BYTE* bits;
     BYTE* bitsU;
     BYTE* bitsV;
     RECT vidrect; // video rectangle

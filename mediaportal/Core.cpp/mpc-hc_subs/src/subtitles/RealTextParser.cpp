@@ -21,7 +21,7 @@
 #include "stdafx.h"
 #include "RealTextParser.h"
 
-CRealTextParser::CRealTextParser(void):
+CRealTextParser::CRealTextParser():
     m_bIgnoreFont(false),
     m_bIgnoreFontSize(false),
     m_bIgnoreFontColor(false),
@@ -34,7 +34,7 @@ CRealTextParser::CRealTextParser(void):
 {
 }
 
-CRealTextParser::~CRealTextParser(void)
+CRealTextParser::~CRealTextParser()
 {
 }
 
@@ -192,8 +192,12 @@ bool CRealTextParser::ExtractTag(wstring& p_rszLine, Tag& p_rTag)
         p_rTag.m_szName = szComment;
 
         ++iPos; // Skip >
-        p_rszLine = p_rszLine.substr(iPos);
-        return true;
+        if (iPos < p_rszLine.length()) {
+            p_rszLine = p_rszLine.substr(iPos);
+            return true;
+        } else {
+            return false;
+        }
     } else {
         p_rTag.m_bComment = false;
     }

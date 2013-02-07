@@ -362,7 +362,7 @@ bool CVobSubFile::Open(CString fn)
     return false;
 }
 
-bool CVobSubFile::Save(CString fn, SubFormat sf)
+bool CVobSubFile::Save(CString fn, int delay, SubFormat sf)
 {
     TrimExtension(fn);
 
@@ -373,16 +373,16 @@ bool CVobSubFile::Save(CString fn, SubFormat sf)
 
     switch (sf) {
         case VobSub:
-            return vsf.SaveVobSub(fn);
+            return vsf.SaveVobSub(fn, delay);
             break;
         case WinSubMux:
-            return vsf.SaveWinSubMux(fn);
+            return vsf.SaveWinSubMux(fn, delay);
             break;
         case Scenarist:
-            return vsf.SaveScenarist(fn);
+            return vsf.SaveScenarist(fn, delay);
             break;
         case Maestro:
-            return vsf.SaveMaestro(fn);
+            return vsf.SaveMaestro(fn, delay);
             break;
         default:
             break;
@@ -806,7 +806,7 @@ bool CVobSubFile::ReadRar(CString fn)
     memset(&ArchiveDataEx, 0, sizeof(ArchiveDataEx));
     // Are these filename conversions needed??
     ArchiveDataEx.ArcNameW = (LPTSTR)(LPCTSTR)fn;
-    char fnA[_MAX_PATH];
+    char fnA[MAX_PATH];
     size_t size;
     if (wcstombs_s(&size, fnA, fn, fn.GetLength())) {
         fnA[0] = 0;
@@ -916,7 +916,7 @@ bool CVobSubFile::ReadIfo(CString fn)
     return true;
 }
 
-bool CVobSubFile::WriteIdx(CString fn)
+bool CVobSubFile::WriteIdx(CString fn, int delay)
 {
     CTextFile f;
     if (!f.Save(fn, CTextFile::DEFAULT_ENCODING)) {
@@ -1025,6 +1025,16 @@ bool CVobSubFile::WriteIdx(CString fn)
     f.WriteString(_T("# Language index in use\n"));
     str.Format(_T("langidx: %d\n\n"), m_iLang);
     f.WriteString(str);
+
+    if (delay) {
+        str.Format(_T("delay: %s%02d:%02d:%02d:%03d\n\n"),
+                   delay < 0 ? _T("-") : _T(""),
+                   abs(delay / 1000 / 60 / 60) % 60,
+                   abs(delay / 1000 / 60) % 60,
+                   abs(delay / 1000) % 60,
+                   abs(delay % 1000));
+        f.WriteString(str);
+    }
 
     // Subs
 
@@ -1144,7 +1154,7 @@ BYTE* CVobSubFile::GetPacket(int idx, int& packetsize, int& datasize, int iLang)
         packetsize = (buff[buff[0x16] + 0x18] << 8) + buff[buff[0x16] + 0x19];
         datasize = (buff[buff[0x16] + 0x1a] << 8) + buff[buff[0x16] + 0x1b];
 
-        ret = DNew BYTE[packetsize];
+        ret = DEBUG_NEW BYTE[packetsize];
         if (!ret) {
             break;
         }
@@ -1679,12 +1689,12 @@ static bool CompressFile(CString fn)
     return !!b;
 }
 
-bool CVobSubFile::SaveVobSub(CString fn)
+bool CVobSubFile::SaveVobSub(CString fn, int delay)
 {
-    return WriteIdx(fn + _T(".idx")) && WriteSub(fn + _T(".sub"));
+    return WriteIdx(fn + _T(".idx"), delay) && WriteSub(fn + _T(".sub"));
 }
 
-bool CVobSubFile::SaveWinSubMux(CString fn)
+bool CVobSubFile::SaveWinSubMux(CString fn, int delay)
 {
     TrimExtension(fn);
 
@@ -1761,7 +1771,7 @@ bool CVobSubFile::SaveWinSubMux(CString fn)
             }
         }
 
-        int t1 = (int)m_img.start;
+        int t1 = (int)m_img.start + delay;
         int t2 = t1 + (int)m_img.delay /*+ (m_size.cy==480?(1000/29.97+1):(1000/25))*/;
 
         ASSERT(t2 > t1);
@@ -1815,7 +1825,7 @@ bool CVobSubFile::SaveWinSubMux(CString fn)
     return true;
 }
 
-bool CVobSubFile::SaveScenarist(CString fn)
+bool CVobSubFile::SaveScenarist(CString fn, int delay)
 {
     TrimExtension(fn);
 
@@ -1829,8 +1839,8 @@ bool CVobSubFile::SaveScenarist(CString fn)
     fn.Replace('\\', '/');
     CString title = fn.Mid(fn.ReverseFind('/') + 1);
 
-    TCHAR buff[_MAX_PATH], * pFilePart = buff;
-    if (GetFullPathName(fn, _MAX_PATH, buff, &pFilePart) == 0) {
+    TCHAR buff[MAX_PATH], * pFilePart = buff;
+    if (GetFullPathName(fn, MAX_PATH, buff, &pFilePart) == 0) {
         return false;
     }
 
@@ -1990,11 +2000,11 @@ bool CVobSubFile::SaveScenarist(CString fn)
             f.WriteString(str);
         }
 
-        int t1 = (int)sp[i].start;
+        int t1 = (int)sp[i].start + delay;
         int h1 = t1 / 1000 / 60 / 60, m1 = (t1 / 1000 / 60) % 60, s1 = (t1 / 1000) % 60;
         int f1 = (int)((m_size.cy == 480 ? 29.97 : 25) * (t1 % 1000) / 1000);
 
-        int t2 = (int)sp[i].stop;
+        int t2 = (int)sp[i].stop + delay;
         int h2 = t2 / 1000 / 60 / 60, m2 = (t2 / 1000 / 60) % 60, s2 = (t2 / 1000) % 60;
         int f2 = (int)((m_size.cy == 480 ? 29.97 : 25) * (t2 % 1000) / 1000);
 
@@ -2022,7 +2032,7 @@ bool CVobSubFile::SaveScenarist(CString fn)
         }
 
         if (i + 1 < sp.GetCount()) {
-            int t3 = (int)sp[i + 1].start;
+            int t3 = (int)sp[i + 1].start + delay;
             int h3 = t3 / 1000 / 60 / 60, m3 = (t3 / 1000 / 60) % 60, s3 = (t3 / 1000) % 60;
             int f3 = (int)((m_size.cy == 480 ? 29.97 : 25) * (t3 % 1000) / 1000);
 
@@ -2074,7 +2084,7 @@ bool CVobSubFile::SaveScenarist(CString fn)
     return true;
 }
 
-bool CVobSubFile::SaveMaestro(CString fn)
+bool CVobSubFile::SaveMaestro(CString fn, int delay)
 {
     TrimExtension(fn);
 
@@ -2088,8 +2098,8 @@ bool CVobSubFile::SaveMaestro(CString fn)
     fn.Replace('\\', '/');
     CString title = fn.Mid(fn.ReverseFind('/') + 1);
 
-    TCHAR buff[_MAX_PATH], * pFilePart = buff;
-    if (GetFullPathName(fn, _MAX_PATH, buff, &pFilePart) == 0) {
+    TCHAR buff[MAX_PATH], * pFilePart = buff;
+    if (GetFullPathName(fn, MAX_PATH, buff, &pFilePart) == 0) {
         return false;
     }
 
@@ -2218,11 +2228,11 @@ bool CVobSubFile::SaveMaestro(CString fn)
             f.WriteString(str);
         }
 
-        int t1 = (int)sp[i].start;
+        int t1 = (int)sp[i].start + delay;
         int h1 = t1 / 1000 / 60 / 60, m1 = (t1 / 1000 / 60) % 60, s1 = (t1 / 1000) % 60;
         int f1 = (int)((m_size.cy == 480 ? 29.97 : 25) * (t1 % 1000) / 1000);
 
-        int t2 = (int)sp[i].stop;
+        int t2 = (int)sp[i].stop + delay;
         int h2 = t2 / 1000 / 60 / 60, m2 = (t2 / 1000 / 60) % 60, s2 = (t2 / 1000) % 60;
         int f2 = (int)((m_size.cy == 480 ? 29.97 : 25) * (t2 % 1000) / 1000);
 
@@ -2250,7 +2260,7 @@ bool CVobSubFile::SaveMaestro(CString fn)
         }
 
         if (i < sp.GetCount() - 1) {
-            int t3 = (int)sp[i + 1].start;
+            int t3 = (int)sp[i + 1].start + delay;
             int h3 = t3 / 1000 / 60 / 60, m3 = (t3 / 1000 / 60) % 60, s3 = (t3 / 1000) % 60;
             int f3 = (int)((m_size.cy == 480 ? 29.97 : 25) * (t3 % 1000) / 1000);
 
@@ -2402,7 +2412,7 @@ void CVobSubStream::Add(REFERENCE_TIME tStart, REFERENCE_TIME tStop, BYTE* pData
     CVobSubImage vsi;
     vsi.GetPacketInfo(pData, (pData[0] << 8) | pData[1], (pData[2] << 8) | pData[3]);
 
-    CAutoPtr<SubPic> p(DNew SubPic());
+    CAutoPtr<SubPic> p(DEBUG_NEW SubPic());
     p->tStart = tStart;
     p->tStop = vsi.delay > 0 ? (tStart + 10000i64 * vsi.delay) : tStop;
     p->pData.SetCount(len);

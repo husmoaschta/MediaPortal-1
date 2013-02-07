@@ -8,9 +8,9 @@
 //------------------------------------------------------------------------------
 
 
-#define _WINDLL
+//#define _WINDLL
 
-#include <streams.h>
+#include "streams.h"
 #include <stdarg.h>
 #include <stdio.h>
 #include <dvdmedia.h>
@@ -248,7 +248,7 @@ HRESULT  DbgUniqueProcessName(LPCTSTR inName, LPTSTR outName)
     }
     else
     {
-        TCHAR pathAndBasename[_MAX_PATH] = {0};
+        TCHAR pathAndBasename[MAX_PATH] = {0};
         
         //there's an extension  - zero-terminate the path and basename first by copying
         hr = StringCchCopyN(pathAndBasename, MAX_PATH, inName, (size_t)dotPos);
@@ -271,7 +271,7 @@ void WINAPI DbgInitLogTo (
     LONG  lReturn;
     DWORD dwKeyType;
     DWORD dwKeySize;
-    TCHAR szFile[_MAX_PATH] = {0};
+    TCHAR szFile[MAX_PATH] = {0};
     static const TCHAR cszKey[] = TEXT("LogToFile");
 
     dwKeySize = MAX_PATH;
@@ -326,7 +326,7 @@ void WINAPI DbgInitLogTo (
             if (INVALID_HANDLE_VALUE == m_hOutput &&
                 GetLastError() == ERROR_SHARING_VIOLATION)
             {
-               TCHAR uniqueName[_MAX_PATH] = {0};
+               TCHAR uniqueName[MAX_PATH] = {0};
                if (SUCCEEDED(DbgUniqueProcessName(szFile, uniqueName)))
                {
                     m_hOutput = CreateFile(uniqueName, GENERIC_WRITE,
@@ -340,7 +340,8 @@ void WINAPI DbgInitLogTo (
             if (INVALID_HANDLE_VALUE != m_hOutput)
             {
               static const TCHAR cszBar[] = TEXT("\r\n\r\n=====DbgInitialize()=====\r\n\r\n");
-              SetFilePointer (m_hOutput, 0, NULL, FILE_END);
+              LARGE_INTEGER zero = {0, 0};
+              SetFilePointerEx(m_hOutput, zero, NULL, FILE_END);
               DbgOutString (cszBar);
             }
           }

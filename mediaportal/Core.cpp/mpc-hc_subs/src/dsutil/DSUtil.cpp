@@ -1,6 +1,6 @@
 /*
  * (C) 2003-2006 Gabest
- * (C) 2006-2012 see Authors.txt
+ * (C) 2006-2013 see Authors.txt
  *
  * This file is part of MPC-HC.
  *
@@ -77,7 +77,7 @@ void DumpStreamConfig(TCHAR* fn, IAMStreamConfig* pAMVSCCap)
                 s.AppendFormat(_T("\tShrinkTaps %d, %d\n"), caps.ShrinkTapsX, caps.ShrinkTapsY);
                 s.AppendFormat(_T("\tFrameInterval %I64d, %I64d (%.4f, %.4f)\n"),
                                caps.MinFrameInterval, caps.MaxFrameInterval,
-                               (float)10000000 / caps.MinFrameInterval, (float)10000000 / caps.MaxFrameInterval);
+                               10000000.0f / caps.MinFrameInterval, 10000000.0f / caps.MaxFrameInterval);
                 s.AppendFormat(_T("\tBitsPerSecond %d - %d\n"), caps.MinBitsPerSecond, caps.MaxBitsPerSecond);
                 f.WriteString(s);
             }
@@ -88,7 +88,7 @@ void DumpStreamConfig(TCHAR* fn, IAMStreamConfig* pAMVSCCap)
                 pbh = &vih->bmiHeader;
 
                 s = _T("FORMAT_VideoInfo\n");
-                s.AppendFormat(_T("\tAvgTimePerFrame %I64d, %.4f\n"), vih->AvgTimePerFrame, (float)10000000 / vih->AvgTimePerFrame);
+                s.AppendFormat(_T("\tAvgTimePerFrame %I64d, %.4f\n"), vih->AvgTimePerFrame, 10000000.0f / vih->AvgTimePerFrame);
                 s.AppendFormat(_T("\trcSource %d,%d,%d,%d\n"), vih->rcSource);
                 s.AppendFormat(_T("\trcTarget %d,%d,%d,%d\n"), vih->rcTarget);
                 f.WriteString(s);
@@ -97,7 +97,7 @@ void DumpStreamConfig(TCHAR* fn, IAMStreamConfig* pAMVSCCap)
                 pbh = &vih->bmiHeader;
 
                 s  = _T("FORMAT_VideoInfo2\n");
-                s.AppendFormat(_T("\tAvgTimePerFrame %I64d, %.4f\n"), vih->AvgTimePerFrame, (float)10000000 / vih->AvgTimePerFrame);
+                s.AppendFormat(_T("\tAvgTimePerFrame %I64d, %.4f\n"), vih->AvgTimePerFrame, 10000000.0f / vih->AvgTimePerFrame);
                 s.AppendFormat(_T("\trcSource %d,%d,%d,%d\n"), vih->rcSource);
                 s.AppendFormat(_T("\trcTarget %d,%d,%d,%d\n"), vih->rcTarget);
                 s.AppendFormat(_T("\tdwInterlaceFlags 0x%x\n"), vih->dwInterlaceFlags);
@@ -218,6 +218,8 @@ bool IsVideoRenderer(IBaseFilter* pBF)
 
 DEFINE_GUID(CLSID_ReClock,
             0x9dc15360, 0x914c, 0x46b8, 0xb9, 0xdf, 0xbf, 0xe6, 0x7f, 0xd3, 0x6c, 0x6a);
+
+DEFINE_GUID(DXVA_Intel_VC1_ClearVideo_2, 0xE07EC519, 0xE651, 0x4CD6, 0xAC, 0x84, 0x13, 0x70, 0xCC, 0xEE, 0xC8, 0x51);
 
 bool IsAudioWaveRenderer(IBaseFilter* pBF)
 {
@@ -891,11 +893,11 @@ CString GetDriveLabel(TCHAR drive)
 
     CString path;
     path.Format(_T("%c:\\"), drive);
-    TCHAR VolumeNameBuffer[_MAX_PATH], FileSystemNameBuffer[_MAX_PATH];
+    TCHAR VolumeNameBuffer[MAX_PATH], FileSystemNameBuffer[MAX_PATH];
     DWORD VolumeSerialNumber, MaximumComponentLength, FileSystemFlags;
     if (GetVolumeInformation(path,
-                             VolumeNameBuffer, _MAX_PATH, &VolumeSerialNumber, &MaximumComponentLength,
-                             &FileSystemFlags, FileSystemNameBuffer, _MAX_PATH)) {
+                             VolumeNameBuffer, MAX_PATH, &VolumeSerialNumber, &MaximumComponentLength,
+                             &FileSystemFlags, FileSystemNameBuffer, MAX_PATH)) {
         label = VolumeNameBuffer;
     }
 
@@ -1085,8 +1087,7 @@ bool ExtractAvgTimePerFrame(const AM_MEDIA_TYPE* pmt, REFERENCE_TIME& rtAvgTimeP
 bool ExtractBIH(IMediaSample* pMS, BITMAPINFOHEADER* bih)
 {
     AM_MEDIA_TYPE* pmt = NULL;
-    pMS->GetMediaType(&pmt);
-    if (pmt) {
+    if (SUCCEEDED(pMS->GetMediaType(&pmt)) && pmt) {
         bool fRet = ExtractBIH(pmt, bih);
         DeleteMediaType(pmt);
         return fRet;
@@ -1447,7 +1448,7 @@ CString MakeFullPath(LPCTSTR path)
     full.Replace('/', '\\');
 
     CString fn;
-    fn.ReleaseBuffer(GetModuleFileName(AfxGetInstanceHandle(), fn.GetBuffer(_MAX_PATH), _MAX_PATH));
+    fn.ReleaseBuffer(GetModuleFileName(AfxGetInstanceHandle(), fn.GetBuffer(MAX_PATH), MAX_PATH));
     CPath p(fn);
 
     if (full.GetLength() >= 2 && full[0] == '\\' && full[1] != '\\') {
@@ -2438,9 +2439,10 @@ typedef struct {
 static const DXVA2_DECODER DXVA2Decoder[] = {
     {&GUID_NULL,                        _T("Unknown")},
     {&GUID_NULL,                        _T("Not using DXVA")},
-    {&DXVA_Intel_H264_ClearVideo,       _T("H.264 bitstream decoder, ClearVideo(tm)")}, // Intel ClearVideo H264 bitstream decoder
-    {&DXVA_Intel_VC1_ClearVideo,        _T("VC-1 bitstream decoder, ClearVideo(tm)")},  // Intel ClearVideo VC-1 bitstream decoder
-    {&DXVA_MPEG4_ASP,                   _T("MPEG-4 ASP bitstream decoder")},            // Nvidia MPEG-4 ASP bitstream decoder
+    {&DXVA_Intel_H264_ClearVideo,       _T("H.264 bitstream decoder, ClearVideo(tm)")},  // Intel ClearVideo H264 bitstream decoder
+    {&DXVA_Intel_VC1_ClearVideo,        _T("VC-1 bitstream decoder, ClearVideo(tm)")},   // Intel ClearVideo VC-1 bitstream decoder
+    {&DXVA_Intel_VC1_ClearVideo_2,      _T("VC-1 bitstream decoder 2, ClearVideo(tm)")}, // Intel ClearVideo VC-1 bitstream decoder 2
+    {&DXVA_MPEG4_ASP,                   _T("MPEG-4 ASP bitstream decoder")},             // Nvidia MPEG-4 ASP bitstream decoder
     {&DXVA_ModeNone,                    _T("Mode none")},
     {&DXVA_ModeH261_A,                  _T("H.261 A, post processing")},
     {&DXVA_ModeH261_B,                  _T("H.261 B, deblocking")},
@@ -2645,7 +2647,7 @@ void TraceFilterInfo(IBaseFilter* pBF)
 {
     FILTER_INFO Info;
     if (SUCCEEDED(pBF->QueryFilterInfo(&Info))) {
-        TRACE(_T(" === Filter info : %S\n"), Info.achName);
+        TRACE(_T(" === Filter info : %s\n"), Info.achName);
         BeginEnumPins(pBF, pEnum, pPin) {
             TracePinInfo(pPin);
         }
@@ -2671,7 +2673,7 @@ void TracePinInfo(IPin* pPin)
         ConnectedFilterInfo.pGraph->Release();
     }
     pPin->QueryPinInfo(&PinInfo);
-    TRACE(_T("      %S (%S) -> %S (Filter %S)\n"),
+    TRACE(_T("      %s (%s) -> %s (Filter %s)\n"),
           PinInfo.achName,
           PinInfo.dir == PINDIR_OUTPUT ? _T("Out") : _T("In"),
           ConnectedInfo.achName,

@@ -1,5 +1,5 @@
 /*
- * (C) 2006-2012 see Authors.txt
+ * (C) 2008-2012 see Authors.txt
  *
  * This file is part of MPC-HC.
  *
@@ -117,7 +117,7 @@ public:
         REFERENCE_TIME   m_rtDuration;
     };
 
-    CHdmvClipInfo(void);
+    CHdmvClipInfo();
     ~CHdmvClipInfo();
 
     HRESULT ReadInfo(LPCTSTR strFile);

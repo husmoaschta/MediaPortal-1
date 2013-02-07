@@ -1,5 +1,5 @@
 /*
- * (C) 2006-2012 see Authors.txt
+ * (C) 2008-2012 see Authors.txt
  *
  * This file is part of MPC-HC.
  *
@@ -24,17 +24,19 @@
 #include "RenderedHdmvSubtitle.h"
 
 CRenderedHdmvSubtitle::CRenderedHdmvSubtitle(CCritSec* pLock, SUBTITLE_TYPE nType, const CString& name, LCID lcid)
-    : CSubPicProviderImpl(pLock), m_name(name), m_lcid(lcid)
+    : CSubPicProviderImpl(pLock)
+    , m_name(name)
+    , m_lcid(lcid)
 {
     switch (nType) {
         case ST_DVB:
-            m_pSub = DNew CDVBSub();
+            m_pSub = DEBUG_NEW CDVBSub();
             if (name.IsEmpty() || (name == _T("Unknown"))) {
                 m_name = "DVB Embedded Subtitle";
             }
             break;
         case ST_HDMV:
-            m_pSub = DNew CHdmvSub();
+            m_pSub = DEBUG_NEW CHdmvSub();
             if (name.IsEmpty() || (name == _T("Unknown"))) {
                 m_name = "HDMV Embedded Subtitle";
             }
@@ -46,7 +48,7 @@ CRenderedHdmvSubtitle::CRenderedHdmvSubtitle(CCritSec* pLock, SUBTITLE_TYPE nTyp
     m_rtStart = 0;
 }
 
-CRenderedHdmvSubtitle::~CRenderedHdmvSubtitle(void)
+CRenderedHdmvSubtitle::~CRenderedHdmvSubtitle()
 {
     delete m_pSub;
 }
@@ -176,4 +178,10 @@ HRESULT CRenderedHdmvSubtitle::NewSegment(REFERENCE_TIME tStart, REFERENCE_TIME 
     m_pSub->Reset();
     m_rtStart = tStart;
     return S_OK;
+}
+
+void CRenderedHdmvSubtitle::EndOfStream()
+{
+    CAutoLock cAutoLock(&m_csCritSec);
+    m_pSub->EndOfStream();
 }

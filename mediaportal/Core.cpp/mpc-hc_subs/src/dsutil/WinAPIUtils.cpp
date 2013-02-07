@@ -1,5 +1,5 @@
 /*
- * (C) 2011-2012 see Authors.txt
+ * (C) 2011-2013 see Authors.txt
  *
  * This file is part of MPC-HC.
  *
@@ -76,15 +76,21 @@ CString GetHiveName(HKEY hive)
 
 bool ExportRegistryKey(CStdioFile& file, HKEY hKeyRoot, CString keyName)
 {
+    // Registry functions don't set GetLastError(), so it needs to be set explicitly
+    LSTATUS errorCode = ERROR_SUCCESS;
+
     HKEY hKey = NULL;
-    if (RegOpenKeyEx(hKeyRoot, keyName, 0, KEY_READ, &hKey) != ERROR_SUCCESS) {
+    errorCode = RegOpenKeyEx(hKeyRoot, keyName, 0, KEY_READ, &hKey);
+    if (errorCode != ERROR_SUCCESS) {
+        SetLastError(errorCode);
         return false;
     }
 
     DWORD subKeysCount = 0, maxSubKeyLen = 0;
     DWORD valuesCount = 0, maxValueNameLen = 0, maxValueDataLen = 0;
-    if (RegQueryInfoKey(hKey, NULL, NULL, NULL, &subKeysCount, &maxSubKeyLen,
-                        NULL, &valuesCount, &maxValueNameLen, &maxValueDataLen, NULL, NULL) != ERROR_SUCCESS) {
+    errorCode = RegQueryInfoKey(hKey, NULL, NULL, NULL, &subKeysCount, &maxSubKeyLen, NULL, &valuesCount, &maxValueNameLen, &maxValueDataLen, NULL, NULL);
+    if (errorCode != ERROR_SUCCESS) {
+        SetLastError(errorCode);
         return false;
     }
     maxSubKeyLen += 1;
@@ -97,14 +103,15 @@ bool ExportRegistryKey(CStdioFile& file, HKEY hKeyRoot, CString keyName)
 
     CString valueName;
     DWORD valueNameLen, valueDataLen, type;
-    BYTE* data = DNew BYTE[maxValueDataLen];
+    BYTE* data = DEBUG_NEW BYTE[maxValueDataLen];
 
     for (DWORD indexValue = 0; indexValue < valuesCount; indexValue++) {
         valueNameLen = maxValueNameLen;
         valueDataLen = maxValueDataLen;
 
-        if (RegEnumValue(hKey, indexValue, valueName.GetBuffer(maxValueNameLen),
-                         &valueNameLen, NULL, &type, data, &valueDataLen) != ERROR_SUCCESS) {
+        errorCode = RegEnumValue(hKey, indexValue, valueName.GetBuffer(maxValueNameLen), &valueNameLen, NULL, &type, data, &valueDataLen);
+        if (errorCode != ERROR_SUCCESS) {
+            SetLastError(errorCode);
             return false;
         }
 
@@ -151,8 +158,9 @@ bool ExportRegistryKey(CStdioFile& file, HKEY hKeyRoot, CString keyName)
     for (DWORD indexSubKey = 0; indexSubKey < subKeysCount; indexSubKey++) {
         subKeyLen = maxSubKeyLen;
 
-        if (RegEnumKeyEx(hKey, indexSubKey, subKeyName.GetBuffer(maxSubKeyLen),
-                         &subKeyLen, NULL, NULL, NULL, NULL) != ERROR_SUCCESS) {
+        errorCode = RegEnumKeyEx(hKey, indexSubKey, subKeyName.GetBuffer(maxSubKeyLen), &subKeyLen, NULL, NULL, NULL, NULL);
+        if (errorCode != ERROR_SUCCESS) {
+            SetLastError(errorCode);
             return false;
         }
 
@@ -163,8 +171,8 @@ bool ExportRegistryKey(CStdioFile& file, HKEY hKeyRoot, CString keyName)
         }
     }
 
-    RegCloseKey(hKey);
-
+    errorCode = RegCloseKey(hKey);
+    SetLastError(errorCode);
     return true;
 }
 
@@ -270,7 +278,7 @@ CString GetProgramPath(bool bWithExecutableName /*= false*/)
 {
     CString path;
 
-    DWORD dwLength = ::GetModuleFileName(NULL, path.GetBuffer(_MAX_PATH), _MAX_PATH);
+    DWORD dwLength = ::GetModuleFileName(NULL, path.GetBuffer(MAX_PATH), MAX_PATH);
     path.ReleaseBuffer((int)dwLength);
 
     if (!bWithExecutableName) {
