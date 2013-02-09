@@ -266,6 +266,7 @@ void CSubManager::Render(int x, int y, int width, int height)
 		ATLTRACE("Size change from %dx%d to %dx%d", m_lastSize.cx, m_lastSize.cy, size.cx, size.cy);
 		m_pAllocator->ChangeDevice(m_d3DDev);
 		//m_pAllocator->SetMaxTextureSize(g_textureSize);
+		m_pAllocator->SetCurSize(size);
 		m_pAllocator->SetCurVidRect(CRect(CPoint(0,0), size));
 		m_pSubPicQueue->Invalidate(m_rtNow+1000000);
 		m_lastSize = size;
