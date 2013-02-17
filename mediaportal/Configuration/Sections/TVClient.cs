@@ -39,10 +39,19 @@ namespace MediaPortal.Configuration.Sections
   {
     #region variables
 
+    /// <summary>
+    /// The hostname for the TV Server
+    /// </summary>
+    public static string hostname = string.Empty;
+
+    /// <summary>
+    /// The hostname from the settings
+    /// </summary>
+    private string _settingsHostname;
+
     private string _preferredAudioLanguages;
     private string _preferredSubLanguages;
     private List<string> _languageCodes;
-    private string _hostname;
 
     private MPGroupBox mpGroupBox2;
     private MPTextBox mpTextBoxHostname;
@@ -146,17 +155,19 @@ namespace MediaPortal.Configuration.Sections
       using (Settings xmlreader = new MPSettings())
       {
         // Get hostname entry
-        _hostname = xmlreader.GetValueAsString("tvservice", "hostname", "");
-        if (string.IsNullOrEmpty(_hostname))
+        _settingsHostname = xmlreader.GetValueAsString("tvservice", "hostname", string.Empty);
+        if (string.IsNullOrEmpty(_settingsHostname))
         {
           // Set hostname to local host
           mpTextBoxHostname.Text = Dns.GetHostName();
+          hostname = mpTextBoxHostname.Text;
           Log.Debug("LoadSettings: set hostname to local host: \"{0}\"", mpTextBoxHostname.Text);
         }
         else
         {
           // Take verified hostname from MediaPortal.xml
-          mpTextBoxHostname.Text = _hostname;
+          mpTextBoxHostname.Text = _settingsHostname;
+          hostname = mpTextBoxHostname.Text;
           mpTextBoxHostname.BackColor = Color.YellowGreen;    // verified
           Log.Debug("LoadSettings: take hostname from settings: \"{0}\"", mpTextBoxHostname.Text);
         }
@@ -302,7 +313,10 @@ namespace MediaPortal.Configuration.Sections
       {
         // If hostname is empty, use local hostname
         if (string.IsNullOrEmpty(mpTextBoxHostname.Text))
+        {
           mpTextBoxHostname.Text = Dns.GetHostName();
+          hostname = mpTextBoxHostname.Text;
+        }
 
         // Save hostname only, if it is verified
         if (mpTextBoxHostname.BackColor == Color.YellowGreen ||
@@ -310,7 +324,7 @@ namespace MediaPortal.Configuration.Sections
         {
           // hostname is valid
           Log.Debug("SaveSettings: hostname is valid - update gentle.config if needed");
-          if (UpdateGentleConfig(mpTextBoxHostname.Text, mpTextBoxHostname.Text.Equals(_hostname)))
+          if (UpdateGentleConfig(mpTextBoxHostname.Text, mpTextBoxHostname.Text.Equals(_settingsHostname)))
           {
             Log.Debug("SaveSettings: update gentle.config was successfull - save hostname");
             xmlwriter.SetValue("tvservice", "hostname", mpTextBoxHostname.Text);
@@ -318,8 +332,9 @@ namespace MediaPortal.Configuration.Sections
           else
           {
             Log.Debug("SaveSettings: error in updating gentle.config - save empty string");
-            xmlwriter.SetValue("tvservice", "hostname", "");
+            xmlwriter.SetValue("tvservice", "hostname", string.Empty);
             mpTextBoxHostname.BackColor = Color.Red;
+            hostname = string.Empty;
           }
         }
         else
@@ -327,7 +342,8 @@ namespace MediaPortal.Configuration.Sections
           // hostname is invalid  
           Log.Debug("SaveSettings: hostname is invalid - save empty string");
           mpTextBoxHostname.BackColor = Color.Red;
-          xmlwriter.SetValue("tvservice", "hostname", "");
+          xmlwriter.SetValue("tvservice", "hostname", string.Empty);
+          hostname = string.Empty;
         }
 
         xmlwriter.SetValueAsBool("tvservice", "preferac3", mpCheckBoxPrefAC3.Checked);
@@ -378,7 +394,6 @@ namespace MediaPortal.Configuration.Sections
       }
     }
 
-    
     /// <summary>
     /// Verifies that the given hostname is a working tv server
     /// </summary>
@@ -1593,8 +1608,10 @@ namespace MediaPortal.Configuration.Sections
       
       // If hostname is empty, use local hostname
       if (string.IsNullOrEmpty(mpTextBoxHostname.Text))
+      {
         mpTextBoxHostname.Text = Dns.GetHostName();
-
+        hostname = mpTextBoxHostname.Text;
+      }
       // Verify hostname
       if (!VerifyHostname(mpTextBoxHostname.Text))
       {
@@ -1602,6 +1619,7 @@ namespace MediaPortal.Configuration.Sections
         Cursor.Current = currentCursor;
         mpButtonTestHostname.Enabled = true;
         mpTextBoxHostname.BackColor = Color.Red;
+        hostname = string.Empty;
       }
       else
       {
