@@ -1041,8 +1041,10 @@ namespace MediaPortal.Configuration
           }
         }
 
-        // Check hostname for tv server (empty hostname is invalid)
-        if (UseTvServer)
+        // Check hostname for tv server if tv or radio is used
+        bool tvPluginEnabled = xmlreader.GetValueAsBool("plugins", "TV", false);
+        bool radioPluginEnabled = xmlreader.GetValueAsBool("plugins", "Radio", false);
+        if (UseTvServer && (tvPluginEnabled || radioPluginEnabled))
         {
           string hostName = xmlreader.GetValueAsString("tvservice", "hostname", "");
           if (string.IsNullOrEmpty(hostName))
