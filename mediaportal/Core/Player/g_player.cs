@@ -1321,7 +1321,7 @@ namespace MediaPortal.Player
           if (AskForRefresh)
           {
             // Refreshrate change done here. Blu-ray player will handle the refresh rate changes by itself
-            if (strFile.ToUpper().IndexOf(@"\BDMV\INDEX.BDMV") == -1)
+            if (strFile.IndexOf(@"\BDMV\INDEX.BDMV") == -1)
             {
               RefreshRateChanger.AdaptRefreshRate(strFile, (RefreshRateChanger.MediaType) (int) type);
             }
